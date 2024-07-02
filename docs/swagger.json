@@ -2,149 +2,117 @@
     "swagger": "2.0",
     "info": {
         "description": "An API in Go using Gin framework",
-        "title": "Boilerplate API",
+        "title": "Demo API",
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8000/",
+    "host": "localhost:8000",
     "paths": {
-        "/profile": {
+        "/api/v1/profile": {
             "get": {
-                "description": "Get one user by id",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get user profile",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "UserApi"
                 ],
-                "summary": "Get one user by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
+                "summary": "User Profile",
+                "operationId": "GetUserProfile",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/responses.Data"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "data": {
-                                                "$ref": "#/definitions/dtos.GetUserResponse"
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
+                            "$ref": "#/definitions/Data-user_GetUserResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/ApiError"
                         }
                     }
                 }
             }
         },
-        "/users": {
+        "/api/v1/users": {
             "get": {
-                "description": "Return all the User",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get all users",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "UserManagementApi"
                 ],
-                "summary": "Get all User.",
+                "summary": "All users",
+                "operationId": "GetAllUsers",
                 "parameters": [
                     {
+                        "type": "boolean",
+                        "name": "all",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "description": "10",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "name": "page_size",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Page no",
-                        "name": "page",
+                        "name": "sort",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "search by name",
-                        "name": "keyword",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "search by type",
-                        "name": "Keyword2",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/responses.DataCount"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "data": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/definitions/dtos.GetUserResponse"
-                                                }
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
+                            "$ref": "#/definitions/DataCount-user_GetUserResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/ApiError"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Create User",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create one user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "UserManagementApi"
                 ],
                 "summary": "Create User",
+                "operationId": "CreateUser",
                 "parameters": [
                     {
                         "description": "Enter JSON",
@@ -152,35 +120,59 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.CreateUserRequestData"
+                            "$ref": "#/definitions/user.CreateUserRequestData"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.Success"
+                            "$ref": "#/definitions/Message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/ApiError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/ApiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get user profile",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserManagementApi"
+                ],
+                "summary": "User Profile",
+                "operationId": "GetOneUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Data-user_GetUserResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ApiError"
                         }
                     }
                 }
@@ -188,7 +180,102 @@
         }
     },
     "definitions": {
-        "dtos.CreateUserRequestData": {
+        "ApiError": {
+            "type": "object",
+            "required": [
+                "error"
+            ],
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/ErrResponse-array_api_errors_ErrorContext"
+                }
+            }
+        },
+        "Data-user_GetUserResponse": {
+            "type": "object",
+            "required": [
+                "data"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/user.GetUserResponse"
+                }
+            }
+        },
+        "DataCount-user_GetUserResponse": {
+            "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/user.GetUserResponse"
+                    }
+                }
+            }
+        },
+        "ErrResponse-array_api_errors_ErrorContext": {
+            "type": "object",
+            "required": [
+                "error",
+                "message"
+            ],
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_errors.ErrorContext"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Message": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_errors.ErrorContext": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "user.CreateUserRequestData": {
             "type": "object",
             "required": [
                 "confirm_password",
@@ -236,7 +323,7 @@
                 }
             }
         },
-        "dtos.GetUserResponse": {
+        "user.GetUserResponse": {
             "type": "object",
             "required": [
                 "email",
@@ -279,47 +366,14 @@
                     "type": "string"
                 }
             }
-        },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
-        "responses.Data": {
-            "type": "object",
-            "properties": {
-                "data": {}
-            }
-        },
-        "responses.DataCount": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "data": {}
-            }
-        },
-        "responses.Error": {
-            "type": "object",
-            "properties": {
-                "error": {}
-            }
-        },
-        "responses.Success": {
-            "type": "object",
-            "properties": {
-                "msg": {
-                    "type": "string"
-                }
-            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Description for what is this security definition being used",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

@@ -8,16 +8,16 @@ import (
 
 // {{uc_resource}}Routes struct
 type {{uc_resource}}Routes struct {
-	logger                    infrastructure.Logger
-	router                    infrastructure.Router
+	logger                    config.Logger
+	router                    router.Router
 	{{lc_resource}}Controller controllers.{{uc_resource}}Controller
 	middleware                middlewares.FirebaseAuthMiddleware
 }
 
 // New{{uc_resource}}Routes creates new {{uc_resource}} controller
 func New{{uc_resource}}Routes(
-	logger infrastructure.Logger,
-	router infrastructure.Router,
+	logger config.Logger,
+	router router.Router,
 	{{lc_resource}}Controller controllers.{{uc_resource}}Controller,
 	middleware middlewares.FirebaseAuthMiddleware,
 ) {{uc_resource}}Routes {
@@ -31,8 +31,8 @@ func New{{uc_resource}}Routes(
 
 // Setup {{lc_resource}} routes
 func (c {{uc_resource}}Routes) Setup() {
-	c.logger.Zap.Info(" Setting up {{uc_resource}} routes")
-	{{lc_resource}} := c.router.Gin.Group("/{{route_name}}")
+	c.logger.Info(" Setting up {{uc_resource}} routes")
+	{{lc_resource}} := c.router.Group("/{{route_name}}")
 	{
 		{{lc_resource}}.POST("", c.{{lc_resource}}Controller.Create{{uc_resource}})
 		{{lc_resource}}.GET("", c.{{lc_resource}}Controller.GetAll{{uc_resource}})

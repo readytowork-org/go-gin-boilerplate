@@ -25,7 +25,7 @@ func (c {{uc_resource}}Service) Create{{uc_resource}}({{lc_resource}} models.{{u
 }
 
 // GetAll{{uc_resource}} call to create the {{uc_resource}}
-func (c {{uc_resource}}Service) GetAll{{uc_resource}}(pagination url_query.Pagination) ([]models.{{uc_resource}}, int64, error) {
+func (c {{uc_resource}}Service) GetAll{{uc_resource}}(pagination utils.Pagination) ([]models.{{uc_resource}}, int64, error) {
 	return c.repository.GetAll{{uc_resource}}(pagination)
 }
 

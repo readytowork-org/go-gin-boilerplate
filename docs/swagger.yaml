@@ -1,5 +1,67 @@
 definitions:
-  dtos.CreateUserRequestData:
+  ApiError:
+    properties:
+      error:
+        $ref: '#/definitions/ErrResponse-array_api_errors_ErrorContext'
+    required:
+    - error
+    type: object
+  Data-user_GetUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/user.GetUserResponse'
+    required:
+    - data
+    type: object
+  DataCount-user_GetUserResponse:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/user.GetUserResponse'
+        type: array
+    required:
+    - count
+    - data
+    type: object
+  ErrResponse-array_api_errors_ErrorContext:
+    properties:
+      error:
+        type: string
+      errors:
+        items:
+          $ref: '#/definitions/api_errors.ErrorContext'
+        type: array
+      message:
+        type: string
+    required:
+    - error
+    - message
+    type: object
+  Message:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  api_errors.ErrorContext:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  user.CreateUserRequestData:
     properties:
       confirm_password:
         type: string
@@ -31,7 +93,7 @@ definitions:
     - password
     - phone
     type: object
-  dtos.GetUserResponse:
+  user.GetUserResponse:
     properties:
       created_at:
         type: string
@@ -60,96 +122,72 @@ definitions:
     - password
     - phone
     type: object
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
-    type: object
-  responses.Data:
-    properties:
-      data: {}
-    type: object
-  responses.DataCount:
-    properties:
-      count:
-        type: integer
-      data: {}
-    type: object
-  responses.Error:
-    properties:
-      error: {}
-    type: object
-  responses.Success:
-    properties:
-      msg:
-        type: string
-    type: object
-host: localhost:8000/
+host: localhost:8000
 info:
   contact: {}
   description: An API in Go using Gin framework
-  title: Boilerplate API
+  title: Demo API
   version: "1.0"
 paths:
-  /profile:
+  /api/v1/{id}:
     get:
-      description: Get one user by id
-      parameters:
-      - default: Bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
+      description: get user profile
+      operationId: GetOneUser
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              allOf:
-              - $ref: '#/definitions/responses.Data'
-              - properties:
-                  data:
-                    $ref: '#/definitions/dtos.GetUserResponse'
-                type: object
-            type: array
+            $ref: '#/definitions/Data-user_GetUserResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Get one user by id
+            $ref: '#/definitions/ApiError'
+      security:
+      - Bearer: []
+      summary: User Profile
       tags:
-      - User
-  /users:
+      - UserManagementApi
+  /api/v1/profile:
     get:
-      description: Return all the User
+      description: get user profile
+      operationId: GetUserProfile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Data-user_GetUserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ApiError'
+      security:
+      - Bearer: []
+      summary: User Profile
+      tags:
+      - UserApi
+  /api/v1/users:
+    get:
+      description: get all users
+      operationId: GetAllUsers
       parameters:
-      - description: "10"
-        in: query
-        name: page_size
-        type: string
-      - description: Page no
-        in: query
-        name: page
-        type: string
-      - description: search by name
-        in: query
+      - in: query
+        name: all
+        type: boolean
+      - in: query
         name: keyword
         type: string
-      - description: search by type
-        in: query
-        name: Keyword2
-        type: string
-      - default: Bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort
         type: string
       produces:
       - application/json
@@ -157,54 +195,50 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              allOf:
-              - $ref: '#/definitions/responses.DataCount'
-              - properties:
-                  data:
-                    items:
-                      $ref: '#/definitions/dtos.GetUserResponse'
-                    type: array
-                type: object
-            type: array
+            $ref: '#/definitions/DataCount-user_GetUserResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Get all User.
+            $ref: '#/definitions/ApiError'
+      security:
+      - Bearer: []
+      summary: All users
       tags:
-      - User
+      - UserManagementApi
     post:
-      description: Create User
+      description: Create one user
+      operationId: CreateUser
       parameters:
       - description: Enter JSON
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/dtos.CreateUserRequestData'
-      - default: Bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
+          $ref: '#/definitions/user.CreateUserRequestData'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.Success'
+            $ref: '#/definitions/Message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/responses.Error'
+            $ref: '#/definitions/ApiError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
+            $ref: '#/definitions/ApiError'
+      security:
+      - Bearer: []
       summary: Create User
       tags:
-      - User
+      - UserManagementApi
+securityDefinitions:
+  Bearer:
+    description: Description for what is this security definition being used
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

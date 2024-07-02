@@ -8,12 +8,12 @@ import (
 
 // {{uc_resource}}Repository database structure
 type {{uc_resource}}Repository struct {
-	db     infrastructure.Database
-	logger infrastructure.Logger
+	db     config.Database
+	logger config.Logger
 }
 
 // New{{uc_resource}}Repository creates a new {{uc_resource}} repository
-func New{{uc_resource}}Repository(db infrastructure.Database, logger infrastructure.Logger) {{uc_resource}}Repository {
+func New{{uc_resource}}Repository(db config.Database, logger config.Logger) {{uc_resource}}Repository {
 	return {{uc_resource}}Repository{
 		db:     db,
 		logger: logger,
@@ -27,7 +27,7 @@ func (c {{uc_resource}}Repository) Create({{uc_resource}} models.{{uc_resource}}
 }
 
 // GetAll{{uc_resource}} Get All {{plc_resource}}
-func (c {{uc_resource}}Repository) GetAll{{uc_resource}}(pagination url_query.Pagination) ({{plc_resource}} []models.{{uc_resource}}, count int64, err error) {
+func (c {{uc_resource}}Repository) GetAll{{uc_resource}}(pagination utils.Pagination) ({{plc_resource}} []models.{{uc_resource}}, count int64, err error) {
 	queryBuilder := c.db.DB.Model(&models.{{uc_resource}}{}).Offset(pagination.Offset).Order(pagination.Sort)
 
 	if !pagination.All{
@@ -53,12 +53,11 @@ func (c {{uc_resource}}Repository) GetOne{{uc_resource}}(ID int64) ({{plc_resour
 }
 
 // UpdateOne{{uc_resource}} Update One {{uc_resource}} By Id
-func (c {{uc_resource}}Repository) UpdateOne{{uc_resource}}({{uc_resource}} models.{{uc_resource}}) error {
+func (c {{uc_resource}}Repository) UpdateOne{{uc_resource}}({{plc_resource}} models.{{uc_resource}}) error {
 	return c.db.DB.Model(&models.{{uc_resource}}{}).
-		Where("id = ?", {{uc_resource}}.ID).
-		Updates(map[string]interface{}{
-			"title":           {{uc_resource}}.Title,
-		}).Error
+		Where("id = ?", {{plc_resource}}.ID).
+		Updates({{plc_resource}}).
+		Error
 }
 
 // DeleteOne{{uc_resource}} Delete One {{uc_resource}} By Id
