@@ -1,11 +1,11 @@
 package middlewares
 
 import (
-	"boilerplate-api/internal/api_errors"
 	"boilerplate-api/internal/auth"
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/constants"
 	"boilerplate-api/internal/json_response"
+	"net/http"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
@@ -40,10 +40,11 @@ func (m JWTAuthMiddleWare) Handle() gin.HandlerFunc {
 
 		tokenString, err := m.jwtService.GetTokenFromHeader(header)
 		if err != nil {
-			m.logger.Error("Error getting token from header: ", err.Error())
-			err = api_errors.Unauthorized.Wrap(err, "Error getting token from header")
-			status, errM := api_errors.HandleError(err)
-			c.JSON(status, json_response.Error{Error: errM})
+			m.logger.Error("Error getting token from header: ", err.Message)
+			c.JSON(http.StatusUnauthorized, json_response.Error[string]{
+				Error:   err.Message,
+				Message: "Error getting token from header",
+			})
 			c.Abort()
 			return
 		}
@@ -51,20 +52,22 @@ func (m JWTAuthMiddleWare) Handle() gin.HandlerFunc {
 		// Parsing and Verifying token
 		parsedToken, parseErr := m.jwtService.ParseAndVerifyToken(tokenString, m.env.JwtAccessSecret)
 		if parseErr != nil {
-			m.logger.Error("Error parsing token: ", parseErr.Error())
-			err = api_errors.Unauthorized.Wrap(parseErr, "Failed to parse and verify token")
-			status, errM := api_errors.HandleError(err)
-			c.JSON(status, json_response.Error{Error: errM})
+			m.logger.Error("Error parsing token: ", parseErr.Message)
+			c.JSON(http.StatusUnauthorized, json_response.Error[string]{
+				Error:   parseErr.Message,
+				Message: "Failed to parse and verify token",
+			})
 			c.Abort()
 			return
 		}
 		// Retrieve claims
 		claims, claimsError := m.jwtService.RetrieveClaims(parsedToken)
 		if claimsError != nil {
-			m.logger.Error("Error retrieving claims: ", claimsError.Error())
-			err = api_errors.Unauthorized.Wrap(claimsError, "Failed to retrieve claims from token")
-			status, errM := api_errors.HandleError(err)
-			c.JSON(status, json_response.Error{Error: errM})
+			m.logger.Error("Error retrieving claims: ", claimsError.Message)
+			c.JSON(http.StatusUnauthorized, json_response.Error[string]{
+				Error:   claimsError.Message,
+				Message: "Failed to retrieve claims from token",
+			})
 			c.Abort()
 			return
 		}
