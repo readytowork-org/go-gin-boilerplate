@@ -109,9 +109,12 @@ func (fb *AuthService) CreateAdmin(userRequest AuthUser) (string, *api_errors.Er
 // VerifyToken verify passed firebase id token
 func (fb *AuthService) VerifyToken(idToken string) (*auth.Token, *api_errors.ErrorResponse) {
 	token, err := fb.VerifyIDToken(context.Background(), idToken)
-	return token, &api_errors.ErrorResponse{
-		Message: err.Error(),
+	if err != nil {
+		return nil, &api_errors.ErrorResponse{
+			Message: err.Error(),
+		}
 	}
+	return token, nil
 }
 
 // SetClaim set's claim to firebase user
