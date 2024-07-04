@@ -3,7 +3,6 @@ package gcp_billing
 import (
 	"net/http"
 
-	"boilerplate-api/internal/api_errors"
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/json_response"
 	"boilerplate-api/services/gcp"
@@ -38,9 +37,10 @@ func (cc Controller) GetCost(c *gin.Context) {
 	billingData, err := cc.service.GetBillingInfo()
 	if err != nil {
 		cc.logger.Error("Error fetching Billing Info records", err.Error())
-		err := api_errors.InternalError.Wrap(err, "Failed To Find Billing info for GCP project")
-		status, errM := api_errors.HandleError(err)
-		c.JSON(status, json_response.Error{Error: errM})
+		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
+			Error:   err.Error(),
+			Message: "Failed To Find Billing info for GCP project",
+		})
 		return
 	}
 	c.JSON(http.StatusOK, json_response.Data[*cloudbilling.ProjectBillingInfo]{
@@ -53,9 +53,10 @@ func (cc Controller) GetBudgetInfo(c *gin.Context) {
 	billingData, err := cc.service.GetExistingBudgetList(c)
 	if err != nil {
 		cc.logger.Error("Error fetching Billing Info records", err.Error())
-		err := api_errors.InternalError.Wrap(err, "Failed To Find Billing info for GCP project")
-		status, errM := api_errors.HandleError(err)
-		c.JSON(status, json_response.Error{Error: errM})
+		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
+			Error:   err.Error(),
+			Message: "Failed To Find Billing info for GCP project",
+		})
 		return
 	}
 	c.JSON(http.StatusOK, json_response.Data[*budgetspb.Budget]{
@@ -68,9 +69,10 @@ func (cc Controller) CreateUpdateBudget(c *gin.Context) {
 	billingData, err := cc.service.CreateOrUpdateBudget(c)
 	if err != nil {
 		cc.logger.Error("Error fetching Billing Info records", err.Error())
-		err := api_errors.InternalError.Wrap(err, "Failed To Find Billing info for GCP project")
-		status, errM := api_errors.HandleError(err)
-		c.JSON(status, json_response.Error{Error: errM})
+		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
+			Error:   err.Error(),
+			Message: "Failed To Find Billing info for GCP project",
+		})
 		return
 	}
 	c.JSON(http.StatusOK, json_response.Data[*budgetspb.Budget]{
