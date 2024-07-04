@@ -47,9 +47,9 @@ func (c AdminSeed) Run() {
 			DisplayName: &name,
 		}
 
-		_, err = c.firebaseService.CreateUser(firebaseAuthUser)
+		_, errResponse := c.firebaseService.CreateUser(firebaseAuthUser)
 		if err != nil {
-			c.logger.Error("Firebase Admin user can't be created: ", err.Error())
+			c.logger.Error("Firebase Admin user can't be created: ", errResponse.Message)
 			return
 		}
 

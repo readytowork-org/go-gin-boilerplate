@@ -33,5 +33,5 @@ type ValidationError struct {
 // ErrorResponse struct
 type ErrorResponse struct {
 	Message   string        `json:"message"`
-	ErrorType HttpErrorType `json:"status"`
+	ErrorType HttpErrorType `json:"error_type"`
 }
