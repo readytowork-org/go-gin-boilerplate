@@ -44,7 +44,10 @@ func NewFirebaseAuthService(logger config.Logger, app *firebase.App) AuthService
 }
 
 // Create creates a new user with email and password
-func (fb *AuthService) Create(userRequest AuthUser, setClaims ...func(claims types.MapString) types.MapString) (string, error) {
+func (fb *AuthService) Create(
+	userRequest AuthUser, setClaims ...func(claims types.MapString) types.MapString) (
+	string, *api_errors.ErrorResponse) {
+
 	params := (&auth.UserToCreate{}).
 		Email(userRequest.Email).
 		Password(userRequest.Password)
@@ -57,10 +60,16 @@ func (fb *AuthService) Create(userRequest AuthUser, setClaims ...func(claims typ
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to create %s", userRequest.Role)
 		if strings.Contains(err.Error(), "EMAIL_EXISTS") {
-			errMessage := fmt.Errorf("%s with this email already exits in Firebase", userRequest.Role)
-			return "", api_errors.BadRequest.Wrap(errMessage, errMsg)
+			errMessage := fmt.Sprintf("%s with this email already exits in Firebase", userRequest.Role)
+			return "", &api_errors.ErrorResponse{
+				ErrorType: api_errors.BadRequest,
+				Message:   errMessage,
+			}
 		}
-		return "", api_errors.InternalError.Wrap(err, errMsg)
+		return "", &api_errors.ErrorResponse{
+			ErrorType: api_errors.InternalError,
+			Message:   errMsg,
+		}
 	}
 
 	claims := types.MapString{constants.Roles.Key: userRequest.Role}
@@ -69,15 +78,18 @@ func (fb *AuthService) Create(userRequest AuthUser, setClaims ...func(claims typ
 		claims = setClaim(claims)
 	}
 
-	err = fb.SetClaim(u.UID, claims)
-	if err != nil {
-		return "Internal Server Error", err
+	errResponse := fb.SetClaim(u.UID, claims)
+	if errResponse != nil {
+		return "", &api_errors.ErrorResponse{
+			Message:   errResponse.Message,
+			ErrorType: api_errors.InternalError,
+		}
 	}
-	return u.UID, err
+	return u.UID, nil
 }
 
 // CreateUser creates a new user with email and password
-func (fb *AuthService) CreateUser(userRequest AuthUser) (string, error) {
+func (fb *AuthService) CreateUser(userRequest AuthUser) (string, *api_errors.ErrorResponse) {
 	return fb.Create(userRequest, func(claims types.MapString) types.MapString {
 		claims[constants.Claims.UserId.Name()] = userRequest.UserID
 		return claims
@@ -85,7 +97,7 @@ func (fb *AuthService) CreateUser(userRequest AuthUser) (string, error) {
 }
 
 // CreateAdmin creates a new admin with email and password
-func (fb *AuthService) CreateAdmin(userRequest AuthUser) (string, error) {
+func (fb *AuthService) CreateAdmin(userRequest AuthUser) (string, *api_errors.ErrorResponse) {
 	return fb.Create(userRequest, func(claims types.MapString) types.MapString {
 		if userRequest.Role != constants.Roles.Admin.ToString() {
 			claims[constants.Claims.AdminId.ToString()] = userRequest.AdminID
@@ -95,35 +107,43 @@ func (fb *AuthService) CreateAdmin(userRequest AuthUser) (string, error) {
 }
 
 // VerifyToken verify passed firebase id token
-func (fb *AuthService) VerifyToken(idToken string) (*auth.Token, error) {
+func (fb *AuthService) VerifyToken(idToken string) (*auth.Token, *api_errors.ErrorResponse) {
 	token, err := fb.VerifyIDToken(context.Background(), idToken)
-	return token, err
+	return token, &api_errors.ErrorResponse{
+		Message: err.Error(),
+	}
 }
 
 // SetClaim set's claim to firebase user
-func (fb *AuthService) SetClaim(uid string, claims map[string]interface{}) error {
+func (fb *AuthService) SetClaim(uid string, claims map[string]interface{}) *api_errors.ErrorResponse {
 	err := fb.SetCustomUserClaims(context.Background(), uid, claims)
-	return err
+	return &api_errors.ErrorResponse{
+		Message: err.Error(),
+	}
 }
 
 // UpdateEmailVerification update firebase user email verify
-func (fb *AuthService) UpdateEmailVerification(uid string) error {
+func (fb *AuthService) UpdateEmailVerification(uid string) *api_errors.ErrorResponse {
 	params := (&auth.UserToUpdate{}).
 		EmailVerified(true)
 	_, err := fb.UpdateUser(context.Background(), uid, params)
-	return err
+	return &api_errors.ErrorResponse{
+		Message: err.Error(),
+	}
 }
 
 // DisableUser true for disabled; false for enabled.
-func (fb *AuthService) DisableUser(uid string, disable bool) error {
+func (fb *AuthService) DisableUser(uid string, disable bool) *api_errors.ErrorResponse {
 	params := (&auth.UserToUpdate{}).
 		Disabled(disable)
 	_, err := fb.UpdateUser(context.Background(), uid, params)
-	return err
+	return &api_errors.ErrorResponse{
+		Message: err.Error(),
+	}
 }
 
 // UpdateFirebaseAdmin handles the common operation to update admin in Firebase for OneStore Admin and Admin
-func (fb *AuthService) UpdateFirebaseAdmin(UID string, newUserData, oldUserData AuthUser) error {
+func (fb *AuthService) UpdateFirebaseAdmin(UID string, newUserData, oldUserData AuthUser) *api_errors.ErrorResponse {
 	fbAdmin := &auth.UserToUpdate{}
 
 	if newUserData.Email != "" && newUserData.Email != oldUserData.Email {
@@ -140,16 +160,20 @@ func (fb *AuthService) UpdateFirebaseAdmin(UID string, newUserData, oldUserData 
 
 	if fbAdmin != nil {
 		if _, err := fb.UpdateUser(context.Background(), UID, fbAdmin); err != nil {
-			return err
+			return &api_errors.ErrorResponse{
+				Message: err.Error(),
+			}
 		}
 	}
 	return nil
 }
 
-func (fb *AuthService) CreateCustomToken(ctx context.Context, uid string) (string, error) {
+func (fb *AuthService) CreateCustomToken(ctx context.Context, uid string) (string, *api_errors.ErrorResponse) {
 	token, err := fb.CustomToken(ctx, uid)
 	if err != nil {
-		return "", err
+		return "", &api_errors.ErrorResponse{
+			Message: err.Error(),
+		}
 	}
 	return token, nil
 }
