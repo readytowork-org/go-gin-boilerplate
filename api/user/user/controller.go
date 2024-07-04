@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"boilerplate-api/database/models"
-	"boilerplate-api/internal/api_errors"
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/constants"
 	"boilerplate-api/internal/json_response"
@@ -41,7 +40,7 @@ func NewController(
 // @Security		Bearer
 // @Produce		application/json
 // @Success		200	{object}	json_response.Data[GetUserResponse]
-// @Failure		500	{object}	json_response.Error
+// @Failure		500	{object}	json_response.Error[string]
 // @Router			/api/v1/profile [get]
 // @Id				GetUserProfile
 func (cc Controller) GetUserProfile(c *gin.Context) {
@@ -50,9 +49,10 @@ func (cc Controller) GetUserProfile(c *gin.Context) {
 	user, err := cc.userService.GetOneUser(userID)
 	if err != nil {
 		cc.logger.Error("Error finding user profile", err.Error())
-		err := api_errors.InternalError.Wrap(err, "Failed to get users profile data")
-		status, errM := api_errors.HandleError(err)
-		c.JSON(status, json_response.Error{Error: errM})
+		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
+			Error:   err.Error(),
+			Message: "Failed to get users profile data",
+		})
 		return
 	}
 
