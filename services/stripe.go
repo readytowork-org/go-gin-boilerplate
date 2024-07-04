@@ -79,10 +79,13 @@ func (service StripeService) CreateSubscription(
 func (service StripeService) UpdateSubscription(
 	stripeSubscriptionID string,
 	stripeParams *stripe.SubscriptionParams,
-) error {
+) *api_errors.ErrorResponse {
 	_, err := service.Subscriptions.Update(stripeSubscriptionID, stripeParams)
 	if err != nil {
-		return api_errors.InternalError.New("Errors while updating subscription")
+		return &api_errors.ErrorResponse{
+			Message:   "Errors while updating subscription",
+			ErrorType: api_errors.InternalError,
+		}
 	}
 	return nil
 }
@@ -90,17 +93,20 @@ func (service StripeService) UpdateSubscription(
 func (service StripeService) CancelSubscription(
 	stripeSubscriptionID string,
 	stripeParams *stripe.SubscriptionCancelParams,
-) error {
+) *api_errors.ErrorResponse {
 	_, err := service.Subscriptions.Cancel(stripeSubscriptionID, stripeParams)
 	if err != nil {
-		return api_errors.InternalError.New("Errors while updating subscription")
+		return &api_errors.ErrorResponse{
+			Message:   "Errors while canceling subscription",
+			ErrorType: api_errors.InternalError,
+		}
 	}
 	return nil
 }
 
 func (service StripeService) CreatePrices(
 	title string, price int64,
-) (prices *stripe.Price, err error) {
+) (*stripe.Price, *api_errors.ErrorResponse) {
 	priceParams := stripe.PriceParams{
 		Product:    stripe.String(service.env.StripeProductID),
 		Currency:   stripe.String(string(stripe.CurrencyJPY)),
@@ -110,46 +116,60 @@ func (service StripeService) CreatePrices(
 			Interval: stripe.String(string(stripe.PriceRecurringIntervalMonth)),
 		},
 	}
-	prices, err = service.Prices.New(&priceParams)
+	prices, err := service.Prices.New(&priceParams)
 	if err != nil {
-		return nil, err
+		return nil, &api_errors.ErrorResponse{
+			ErrorType: api_errors.InternalError,
+			Message:   "Error while creating price",
+		}
 	}
-	return prices, err
+	return prices, nil
 
 }
 
 func (service StripeService) UpdatePrices(
 	stripePriceID string,
 	priceParams *stripe.PriceParams,
-) (prices *stripe.Price, err error) {
-	prices, err = service.Prices.Update(
+) (prices *stripe.Price, errResponse *api_errors.ErrorResponse) {
+	prices, err := service.Prices.Update(
 		stripePriceID,
 		priceParams,
 	)
 	if err != nil {
-		return nil, err
+		return nil, &api_errors.ErrorResponse{
+			ErrorType: api_errors.InternalError,
+			Message:   "Error while updating price",
+		}
 	}
-	return prices, err
+	return prices, nil
 
 }
 
 func (service StripeService) CreatePaymentIntent(
 	paymentParams *stripe.PaymentIntentParams,
-) (payment *stripe.PaymentIntent, err error) {
+) (payment *stripe.PaymentIntent, errResponse *api_errors.ErrorResponse) {
 	paymentMethod := stripe.PaymentIntentAutomaticPaymentMethodsParams{
 		Enabled: stripe.Bool(true),
 	}
 	paymentParams.AutomaticPaymentMethods = &paymentMethod
-	payment, err = service.PaymentIntents.New(paymentParams)
+	payment, err := service.PaymentIntents.New(paymentParams)
 	if err != nil {
-		return nil, err
+		return nil, &api_errors.ErrorResponse{
+			ErrorType: api_errors.InternalError,
+			Message:   "Error while creating payment intent",
+		}
 	}
-	return payment, err
+	return payment, nil
 
 }
 
-func (service StripeService) VoidInvoice(invoiceID string) error {
+func (service StripeService) VoidInvoice(invoiceID string) *api_errors.ErrorResponse {
 	params := &stripe.InvoiceVoidInvoiceParams{}
-	_, err := service.Invoices.VoidInvoice(invoiceID, params)
-	return err
+	if _, err := service.Invoices.VoidInvoice(invoiceID, params); err != nil {
+		return &api_errors.ErrorResponse{
+			Message:   "Error while voiding invoice",
+			ErrorType: api_errors.InternalError,
+		}
+	}
+	return nil
 }
