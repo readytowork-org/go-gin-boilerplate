@@ -1,7 +1,7 @@
 package firebase
 
 import (
-	"errors"
+	"boilerplate-api/internal/api_errors"
 	"net/http"
 	"strings"
 
@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type SetClaims func(ctx *gin.Context, claims types.MapString) (int, error)
+type SetClaims func(ctx *gin.Context, claims types.MapString) *api_errors.ErrorResponse
 
 // AuthMiddleware structure
 type AuthMiddleware struct {
@@ -34,9 +34,8 @@ func NewFirebaseAuthMiddleware(
 func (f AuthMiddleware) HandleAuth(setClaims ...SetClaims) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := f.getTokenFromHeader(c)
-
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, json_response.ErrorMsg{Error: err.Error()})
+			c.JSON(http.StatusUnauthorized, json_response.Error[string]{Error: err.Message})
 			c.Abort()
 			return
 		}
@@ -46,9 +45,9 @@ func (f AuthMiddleware) HandleAuth(setClaims ...SetClaims) gin.HandlerFunc {
 		})
 
 		for _, setClaim := range setClaims {
-			httpCode, err := setClaim(c, token.Claims)
+			err = setClaim(c, token.Claims)
 			if err != nil {
-				c.JSON(httpCode, json_response.ErrorMsg{Error: err.Error()})
+				c.JSON(err.ErrorType.ToInt(), json_response.Error[string]{Error: err.Message})
 				c.Abort()
 				return
 			}
@@ -61,27 +60,33 @@ func (f AuthMiddleware) HandleAuth(setClaims ...SetClaims) gin.HandlerFunc {
 
 // HandleUserAuth Handle handles auth requests
 func (f AuthMiddleware) HandleUserAuth() gin.HandlerFunc {
-	return f.HandleAuth(func(c *gin.Context, claims types.MapString) (int, error) {
+	return f.HandleAuth(func(c *gin.Context, claims types.MapString) *api_errors.ErrorResponse {
 		role := claims[constants.Roles.Key].(constants.Role)
 		if role != constants.Roles.User {
-			return http.StatusUnauthorized, errors.New("unauthorized request")
+			return &api_errors.ErrorResponse{
+				ErrorType: api_errors.Unauthorized,
+				Message:   "unauthorized request",
+			}
 		}
 		c.Set(constants.Roles.Key, role.ToString())
 
 		userIdKey := constants.Claims.UserId.ToString()
 		c.Set(userIdKey, int64(claims[userIdKey].(float64)))
 
-		return -1, nil
+		return nil
 	})
 }
 
 // HandleAdminAuth handles middleware for roles
 func (f AuthMiddleware) HandleAdminAuth(allowedRoles ...constants.Role) gin.HandlerFunc {
-	return f.HandleAuth(func(c *gin.Context, claims types.MapString) (int, error) {
+	return f.HandleAuth(func(c *gin.Context, claims types.MapString) *api_errors.ErrorResponse {
 		role := claims[constants.Roles.Key].(constants.Role)
 		if len(allowedRoles) > 0 {
 			if !f.checkRoles(role, allowedRoles) {
-				return http.StatusUnauthorized, errors.New("unauthorized request")
+				return &api_errors.ErrorResponse{
+					ErrorType: api_errors.Unauthorized,
+					Message:   "unauthorized request",
+				}
 			}
 		}
 		c.Set(constants.Roles.Key, role.ToString())
@@ -89,18 +94,20 @@ func (f AuthMiddleware) HandleAdminAuth(allowedRoles ...constants.Role) gin.Hand
 		adminIdKey := constants.Claims.AdminId.ToString()
 		c.Set(adminIdKey, int64(claims[adminIdKey].(float64)))
 
-		return -1, nil
+		return nil
 	})
 }
 
 // getTokenFromHeader gets token from header
-func (f AuthMiddleware) getTokenFromHeader(c *gin.Context) (*auth.Token, error) {
+func (f AuthMiddleware) getTokenFromHeader(c *gin.Context) (*auth.Token, *api_errors.ErrorResponse) {
 	header := c.GetHeader(constants.Headers.Authorization.ToString())
 	idToken := strings.TrimSpace(strings.Replace(header, "Bearer", "", 1))
 
 	token, err := f.service.VerifyToken(idToken)
 	if err != nil {
-		return nil, err
+		return nil, &api_errors.ErrorResponse{
+			Message: err.Message,
+		}
 	}
 
 	return token, nil
