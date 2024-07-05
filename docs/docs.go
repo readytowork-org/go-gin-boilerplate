@@ -41,7 +41,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ApiError"
+                            "$ref": "#/definitions/ApiError-string"
                         }
                     }
                 }
@@ -100,7 +100,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ApiError"
+                            "$ref": "#/definitions/ApiError-string"
                         }
                     }
                 }
@@ -133,7 +133,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User Created Successfully",
                         "schema": {
                             "$ref": "#/definitions/Message"
                         }
@@ -141,13 +141,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ApiError"
+                            "$ref": "#/definitions/ApiError-string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/ApiError-array_api_errors_ValidationError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ApiError"
+                            "$ref": "#/definitions/ApiError-string"
                         }
                     }
                 }
@@ -179,7 +185,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ApiError"
+                            "$ref": "#/definitions/ApiError-string"
                         }
                     }
                 }
@@ -187,14 +193,34 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "ApiError": {
+        "ApiError-array_api_errors_ValidationError": {
             "type": "object",
             "required": [
-                "error"
+                "message"
             ],
             "properties": {
                 "error": {
-                    "$ref": "#/definitions/ErrResponse-array_api_errors_ErrorContext"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_errors.ValidationError"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApiError-string": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -227,27 +253,6 @@ const docTemplate = `{
                 }
             }
         },
-        "ErrResponse-array_api_errors_ErrorContext": {
-            "type": "object",
-            "required": [
-                "error",
-                "message"
-            ],
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "errors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/api_errors.ErrorContext"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "Message": {
             "type": "object",
             "required": [
@@ -259,7 +264,7 @@ const docTemplate = `{
                 }
             }
         },
-        "api_errors.ErrorContext": {
+        "api_errors.ValidationError": {
             "type": "object",
             "properties": {
                 "field": {

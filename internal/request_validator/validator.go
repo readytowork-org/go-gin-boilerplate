@@ -63,11 +63,11 @@ func (cv Validator) generateValidationMessage(field string, rule string) (messag
 	}
 }
 
-func (cv Validator) GenerateValidationResponse(err error) []api_errors.ErrorContext {
-	var validations []api_errors.ErrorContext
+func (cv Validator) GenerateValidationResponse(err error) []api_errors.ValidationError {
+	var validations []api_errors.ValidationError
 	for _, value := range err.(validator.ValidationErrors) {
 		field, rule := value.Field(), value.Tag()
-		validation := api_errors.ErrorContext{Field: field, Message: cv.generateValidationMessage(field, rule)}
+		validation := api_errors.ValidationError{Field: field, Message: cv.generateValidationMessage(field, rule)}
 		validations = append(validations, validation)
 	}
 	return validations

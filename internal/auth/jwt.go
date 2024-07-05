@@ -32,50 +32,57 @@ func NewJWTAuthService(
 	}
 }
 
-func (m JWTAuthService) GetTokenFromHeader(header string) (string, error) {
+func (m JWTAuthService) GetTokenFromHeader(header string) (string, *api_errors.ErrorResponse) {
 	if header == "" {
-		err := api_errors.BadRequest.New("Authorization token is required in header")
-		err = api_errors.SetCustomMessage(err, "Authorization token is required in header")
-		m.logger.Error("[GetHeader]: ", err.Error())
-		return "", err
+		err := api_errors.ErrorResponse{
+			Message: "Authorization token is required in header",
+		}
+		m.logger.Error("[GetHeader]: ", err.Message)
+		return "", &err
 	}
 
 	if !strings.Contains(header, constants.TokenTypes.Bearer.ToString()) {
-		err := api_errors.BadRequest.New("Token type is required")
-		m.logger.Error("Missing token type: ", err.Error())
-		return "", err
+		err := api_errors.ErrorResponse{
+			Message: "Token type is required",
+		}
+		m.logger.Error("Missing token type: ", err.Message)
+		return "", &err
 	}
 	tokenString := strings.TrimSpace(strings.Replace(header, "Bearer", "", 1))
 	return tokenString, nil
 
 }
 
-func (m JWTAuthService) ParseAndVerifyToken(tokenString, secret string) (*jwt.Token, error) {
+func (m JWTAuthService) ParseAndVerifyToken(tokenString, secret string) (*jwt.Token, *api_errors.ErrorResponse) {
 	// Parse the token using the secret key
 	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
 		if !strings.Contains(err.Error(), "expired") {
-			m.logger.Error("Invalid token[ParseWithClaims] :", err.Error())
-			err := api_errors.BadRequest.New("Invalid ID token")
-			return nil, err
+			err := api_errors.ErrorResponse{
+				Message: "Invalid ID token",
+			}
+			return nil, &err
 		}
 		m.logger.Error("Invalid token[ParseWithClaims] :", err.Error())
-		return nil, err
+		return nil, &api_errors.ErrorResponse{
+			Message: err.Error(),
+		}
 	}
 	return token, nil
 
 }
 
-func (m JWTAuthService) RetrieveClaims(token *jwt.Token) (*JWTClaims, error) {
+func (m JWTAuthService) RetrieveClaims(token *jwt.Token) (*JWTClaims, *api_errors.ErrorResponse) {
 	// Verify token
 	claims, ok := token.Claims.(*JWTClaims)
 	if !ok || !token.Valid {
-		err := api_errors.BadRequest.New("Invalid token")
-		err = api_errors.SetCustomMessage(err, "Invalid token")
-		m.logger.Error("Invalid token [token.Valid]: ", err.Error())
-		return nil, err
+		err := api_errors.ErrorResponse{
+			Message: "Invalid ID token",
+		}
+		m.logger.Error("Invalid token [token.Valid]: ", err.Message)
+		return nil, &err
 	}
 	return claims, nil
 
