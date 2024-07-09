@@ -1,12 +1,12 @@
 package gcp
 
 import (
-	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/utils"
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -21,21 +21,19 @@ import (
 
 // StorageBucketService the file upload/download functions
 type StorageBucketService struct {
-	client BucketClient
-	logger config.Logger
-	env    config.Env
+	client            *storage.Client
+	logger            *zap.SugaredLogger
+	storageBucketName string
 }
 
 // NewStorageBucketService for the StorageBucketService struct
 func NewStorageBucketService(
-	logger config.Logger,
-	env config.Env,
-	client BucketClient,
+	serviceConfig StorageBucketService,
 ) StorageBucketService {
 	return StorageBucketService{
-		client: client,
-		logger: logger,
-		env:    env,
+		client:            serviceConfig.client,
+		logger:            serviceConfig.logger,
+		storageBucketName: serviceConfig.storageBucketName,
 	}
 }
 
@@ -57,7 +55,7 @@ func (service StorageBucketService) UploadFile(
 	file multipart.File,
 	fileName string,
 ) (string, error) {
-	bucketName := service.env.StorageBucketName
+	bucketName := service.storageBucketName
 
 	if bucketName == "" {
 		service.logger.Fatal("Please check your env file for StorageBucketName")
@@ -94,7 +92,7 @@ func (service StorageBucketService) UploadBinary(
 	fileName string,
 ) (string, error) {
 
-	var bucketName = service.env.StorageBucketName
+	var bucketName = service.storageBucketName
 
 	if bucketName == "" {
 		service.logger.Fatal("Please check your env file for StorageBucketName")
@@ -138,7 +136,7 @@ func (service StorageBucketService) UploadBinary(
 // RemoveObject removes the file from the storage bucket
 func (service StorageBucketService) RemoveObject(objectName string) error {
 
-	bucketName := service.env.StorageBucketName
+	bucketName := service.storageBucketName
 	if bucketName == "" {
 		service.logger.Fatal("Please check your env file for StorageBucketName")
 	}
@@ -168,7 +166,7 @@ func (service StorageBucketService) UploadThumbnailFile(ctx context.Context,
 	file image.Image,
 	fileName string, extension string) (string, error) {
 
-	var bucketName = service.env.StorageBucketName
+	var bucketName = service.storageBucketName
 	if bucketName == "" {
 		service.logger.Fatal("Please check your env file for StorageBucketName")
 	}
