@@ -1,18 +1,29 @@
 package firebase
 
 import (
-	"boilerplate-api/internal/config"
 	"context"
 	"firebase.google.com/go"
 	"firebase.google.com/go/messaging"
+	"go.uber.org/zap"
 )
 
+type CMClientConfig struct {
+	logger *zap.SugaredLogger
+	app    *firebase.App
+}
+
+type CMClientService struct {
+	*messaging.Client
+}
+
 // NewFirebaseCMClient creates new firebase cloud messaging client
-func NewFirebaseCMClient(logger config.Logger, app *firebase.App) *messaging.Client {
+func NewFirebaseCMClient(config CMClientConfig) CMClientService {
 	ctx := context.Background()
-	messagingClient, err := app.Messaging(ctx)
+	messagingClient, err := config.app.Messaging(ctx)
 	if err != nil {
-		logger.Fatalf("Firebase messaing: %v", err)
+		config.logger.Fatalf("Firebase messaing: %v", err)
 	}
-	return messagingClient
+	return CMClientService{
+		Client: messagingClient,
+	}
 }
