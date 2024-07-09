@@ -1,35 +1,42 @@
 package aws
 
 import (
-	"boilerplate-api/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"go.uber.org/zap"
 	"mime/multipart"
 
 	"context"
 )
 
+type S3BucketConfig struct {
+	logger   *zap.SugaredLogger
+	s3bucket string
+	s3Region string
+	config   aws.Config
+}
+
 // S3BucketService handles the file upload functions
 type S3BucketService struct {
-	client *s3.Client
-	logger config.Logger
-	env    config.Env
+	client   *s3.Client
+	logger   *zap.SugaredLogger
+	s3bucket string
+	s3Region string
 }
 
 // NewS3BucketService initialization for the AWS S3 BucketService struct
 func NewS3BucketService(
-	logger config.Logger,
-	config aws.Config,
-	env config.Env,
+	bucketConfig S3BucketConfig,
 ) S3BucketService {
-	client := s3.New(s3.Options{Credentials: config.Credentials, Region: env.AwsS3Region})
-	logger.Info("✅  AWS S3 service created")
+	client := s3.New(s3.Options{Credentials: bucketConfig.config.Credentials, Region: bucketConfig.s3Region})
+	bucketConfig.logger.Info("✅  AWS S3 service created")
 	return S3BucketService{
-		client: client,
-		logger: logger,
-		env:    env,
+		client:   client,
+		logger:   bucketConfig.logger,
+		s3bucket: bucketConfig.s3bucket,
+		s3Region: bucketConfig.s3Region,
 	}
 }
 
@@ -41,7 +48,7 @@ func (s S3BucketService) UploadToS3(
 ) (string, error) {
 	uploader := manager.NewUploader(s.client)
 	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
-		Bucket:      aws.String(s.env.AwsS3Bucket),
+		Bucket:      aws.String(s.s3bucket),
 		Key:         aws.String(fileName),
 		Body:        file,
 		ContentType: aws.String(fileHeader.Header.Get("content-type")),
