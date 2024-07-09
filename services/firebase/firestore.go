@@ -1,21 +1,30 @@
 package firebase
 
 import (
-	"boilerplate-api/internal/config"
 	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go"
+	"go.uber.org/zap"
 )
 
-// NewFirestoreClient creates new firestore client
-func NewFirestoreClient(logger config.Logger, app *firebase.App) *firestore.Client {
+type StoreClientConfig struct {
+	logger *zap.SugaredLogger
+	app    *firebase.App
+}
+
+type StoreClientService struct {
+	*firestore.Client
+}
+
+// NewFireStoreClient creates new firestore client
+func NewFireStoreClient(config StoreClientConfig) StoreClientService {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	firestoreClient, err := app.Firestore(ctx)
+	firestoreClient, err := config.app.Firestore(ctx)
 	if err != nil {
-		logger.Fatalf("Firestore client: %v", err)
+		config.logger.Fatalf("Firestore client: %v", err)
 	}
 
-	return firestoreClient
+	return StoreClientService{Client: firestoreClient}
 }
