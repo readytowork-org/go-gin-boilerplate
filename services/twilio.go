@@ -5,11 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-
-	"boilerplate-api/internal/config"
 )
 
 type PhoneMessage struct {
@@ -55,23 +54,16 @@ type SuccessResponse struct {
 type TwilioService struct {
 	baseURL   string
 	smsFrom   string
-	sid       string
+	sID       string
 	authToken string
-	logger    config.Logger
+	logger    *zap.SugaredLogger
 }
 
 // NewTwilioService creates new twilio service
 func NewTwilioService(
-	env config.Env,
-	logger config.Logger,
+	twilioService TwilioService,
 ) TwilioService {
-	return TwilioService{
-		baseURL:   env.TwilioBaseURL,
-		sid:       env.TwilioSID,
-		authToken: env.TwilioAuthToken,
-		smsFrom:   env.TwilioSMSFrom,
-		logger:    logger,
-	}
+	return twilioService
 }
 
 // SMSInput input for sms
@@ -82,7 +74,7 @@ type SMSInput struct {
 }
 
 func (t TwilioService) SendSMS(input SMSInput) (*SuccessResponse, *ErrorResponse, error) {
-	url := fmt.Sprintf("%s/Accounts/%s/Messages.json", t.baseURL, t.sid)
+	url := fmt.Sprintf("%s/Accounts/%s/Messages.json", t.baseURL, t.sID)
 
 	t.logger.Info(url)
 
@@ -141,7 +133,7 @@ func (t TwilioService) SendSMS(input SMSInput) (*SuccessResponse, *ErrorResponse
 }
 
 func (t TwilioService) getBasicToken() string {
-	token := fmt.Sprintf("%s:%s", t.sid, t.authToken)
+	token := fmt.Sprintf("%s:%s", t.sID, t.authToken)
 	return base64.StdEncoding.EncodeToString([]byte(token))
 }
 
