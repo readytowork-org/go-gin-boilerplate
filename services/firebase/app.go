@@ -2,19 +2,31 @@ package firebase
 
 import (
 	"context"
-
-	"boilerplate-api/internal/config"
 	"firebase.google.com/go"
+	"go.uber.org/zap"
 	"google.golang.org/api/option"
 )
 
+// AppConfig structure
+type AppConfig struct {
+	logger *zap.SugaredLogger
+	opt    *option.ClientOption
+}
+
+// AppService structure
+type AppService struct {
+	*firebase.App
+}
+
 // NewFirebaseApp creates new firebase app instance
-func NewFirebaseApp(logger config.Logger, opt *option.ClientOption) *firebase.App {
-	app, err := firebase.NewApp(context.Background(), nil, *opt)
+func NewFirebaseApp(config AppConfig) AppService {
+	app, err := firebase.NewApp(context.Background(), nil, *config.opt)
 	if err != nil {
-		logger.Fatalf("Firebase NewApp: %v", err)
+		config.logger.Fatalf("Firebase NewApp: %v", err)
 	}
 
-	logger.Info("✅ Firebase app initialized.")
-	return app
+	config.logger.Info("✅ Firebase app initialized.")
+	return AppService{
+		App: app,
+	}
 }
