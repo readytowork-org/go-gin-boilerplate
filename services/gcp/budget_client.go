@@ -1,22 +1,25 @@
 package gcp
 
 import (
-	"context"
-
-	"boilerplate-api/internal/config"
 	"cloud.google.com/go/billing/budgets/apiv1"
+	"context"
+	"go.uber.org/zap"
 	"google.golang.org/api/option"
 )
 
+type BudgetClientConfig struct {
+	logger       *zap.SugaredLogger
+	clientOption *option.ClientOption
+}
 type BudgetClient struct {
 	*budgets.BudgetClient
 }
 
-func NewGCPBudgetClient(logger config.Logger, clientOption *option.ClientOption) BudgetClient {
-	budgetClient, err := budgets.NewBudgetClient(context.Background(), *clientOption)
+func NewGCPBudgetClient(clientConfig BudgetClientConfig) BudgetClient {
+	budgetClient, err := budgets.NewBudgetClient(context.Background(), *clientConfig.clientOption)
 
 	if err != nil {
-		logger.Panic("Failed to create cloud budget api client: %v \n", err)
+		clientConfig.logger.Panic("Failed to create cloud budget api client: %v \n", err)
 	}
 	return BudgetClient{
 		budgetClient,
