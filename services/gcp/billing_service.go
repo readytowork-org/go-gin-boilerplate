@@ -26,15 +26,7 @@ type BillingService struct {
 func NewGCPBillingService(
 	configService BillingService,
 ) BillingService {
-	return BillingService{
-		projectName:       configService.projectName,
-		billingAccountID:  configService.billingAccountID,
-		budgetDisplayName: configService.budgetDisplayName,
-		budgetAmount:      configService.budgetAmount,
-		logger:            configService.logger,
-		gcpBilling:        configService.gcpBilling,
-		budgetClient:      configService.budgetClient,
-	}
+	return configService
 }
 
 // GetBillingInfo Get Billing info for certain date

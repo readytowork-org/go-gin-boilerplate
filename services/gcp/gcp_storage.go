@@ -30,11 +30,7 @@ type StorageBucketService struct {
 func NewStorageBucketService(
 	serviceConfig StorageBucketService,
 ) StorageBucketService {
-	return StorageBucketService{
-		client:            serviceConfig.client,
-		logger:            serviceConfig.logger,
-		storageBucketName: serviceConfig.storageBucketName,
-	}
+	return serviceConfig
 }
 
 func (service StorageBucketService) GetImageUrl(ctx context.Context, image multipart.File, imageFileHeader *multipart.FileHeader) (uploadedUrl string, err error) {
