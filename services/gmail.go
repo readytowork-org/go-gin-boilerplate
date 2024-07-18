@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"go.uber.org/zap"
 	"time"
 
 	"boilerplate-api/internal/utils"
@@ -24,18 +23,22 @@ type EmailParams struct {
 	Lang            string
 }
 
+type gLogger interface {
+	Fatal(args ...interface{})
+}
+
 type GmailConfig struct {
 	clientID     string
 	clientSecret string
 	accessToken  string
 	refreshToken string
 	hostURL      string
-	logger       *zap.SugaredLogger
+	logger       gLogger
 }
 
 type GmailService struct {
 	*gmail.Service
-	logger *zap.SugaredLogger
+	logger gLogger
 }
 
 func NewGmailService(gmailConfig GmailConfig) GmailService {
