@@ -4,12 +4,17 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"google.golang.org/api/option"
 )
 
+type bucketClientLogger interface {
+	Fatalf(template string, args ...interface{})
+	Fatal(args ...interface{})
+	Error(args ...interface{})
+}
+
 type BucketClientConfig struct {
-	logger            *zap.SugaredLogger
+	logger            bucketClientLogger
 	storageBucketName string
 	clientOption      *option.ClientOption
 }

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -19,10 +18,15 @@ import (
 	"cloud.google.com/go/storage"
 )
 
+type storageBucketLogger interface {
+	Fatalf(template string, args ...interface{})
+	Fatal(args ...interface{})
+}
+
 // StorageBucketService the file upload/download functions
 type StorageBucketService struct {
 	client            *storage.Client
-	logger            *zap.SugaredLogger
+	logger            storageBucketLogger
 	storageBucketName string
 }
 

@@ -2,13 +2,16 @@ package gcp
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/option"
 )
 
+type billingClientLogger interface {
+	Panic(args ...interface{})
+}
+
 type BillingClientConfig struct {
-	logger       *zap.SugaredLogger
+	logger       billingClientLogger
 	clientOption *option.ClientOption
 }
 

@@ -1,15 +1,18 @@
 package gcp
 
 import (
+	"cloud.google.com/go/billing/budgets/apiv1/budgetspb"
 	"context"
 	"fmt"
-	"go.uber.org/zap"
-
-	"cloud.google.com/go/billing/budgets/apiv1/budgetspb"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/iterator"
 	"google.golang.org/genproto/googleapis/type/money"
 )
+
+type billingServiceLogger interface {
+	Errorf(template string, args ...interface{})
+	Panic(args ...interface{})
+}
 
 // BillingService -> handles the gcp billing related functions
 type BillingService struct {
@@ -17,7 +20,7 @@ type BillingService struct {
 	billingAccountID  string
 	budgetDisplayName string
 	budgetAmount      int64
-	logger            *zap.SugaredLogger
+	logger            billingServiceLogger
 	gcpBilling        BillingClient
 	budgetClient      BudgetClient
 }
