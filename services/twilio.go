@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -50,13 +49,19 @@ type SuccessResponse struct {
 	} `json:"subresource_uris"`
 }
 
+type tLogger interface {
+	Info(args ...interface{})
+	Error(args ...interface{})
+	Errorf(template string, args ...interface{})
+}
+
 // TwilioService twilio service structure
 type TwilioService struct {
 	baseURL   string
 	smsFrom   string
 	sID       string
 	authToken string
-	logger    *zap.SugaredLogger
+	logger    tLogger
 }
 
 // NewTwilioService creates new twilio service
