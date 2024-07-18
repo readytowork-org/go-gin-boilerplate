@@ -3,13 +3,17 @@ package firebase
 import (
 	"context"
 	"firebase.google.com/go"
-	"go.uber.org/zap"
 	"google.golang.org/api/option"
 )
 
+type appConfigLogger interface {
+	Info(args ...interface{})
+	Fatalf(template string, args ...interface{})
+}
+
 // AppConfig structure
 type AppConfig struct {
-	logger *zap.SugaredLogger
+	logger appConfigLogger
 	opt    *option.ClientOption
 }
 

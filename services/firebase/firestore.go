@@ -4,11 +4,14 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go"
-	"go.uber.org/zap"
 )
 
+type storeClientLogger interface {
+	Fatalf(template string, args ...interface{})
+}
+
 type StoreClientConfig struct {
-	logger *zap.SugaredLogger
+	logger storeClientLogger
 	app    *firebase.App
 }
 

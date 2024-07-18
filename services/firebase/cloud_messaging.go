@@ -4,11 +4,14 @@ import (
 	"context"
 	"firebase.google.com/go"
 	"firebase.google.com/go/messaging"
-	"go.uber.org/zap"
 )
 
+type loggerCMClient interface {
+	Fatalf(template string, args ...interface{})
+}
+
 type CMClientConfig struct {
-	logger *zap.SugaredLogger
+	logger loggerCMClient
 	app    *firebase.App
 }
 

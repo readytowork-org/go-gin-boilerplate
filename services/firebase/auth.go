@@ -3,7 +3,6 @@ package firebase
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"strings"
 
@@ -23,8 +22,12 @@ type AuthUser struct {
 	UserID      int64
 }
 
+type authConfigLogger interface {
+	Fatalf(template string, args ...interface{})
+}
+
 type AuthConfig struct {
-	logger *zap.SugaredLogger
+	logger authConfigLogger
 	app    *firebase.App
 }
 
