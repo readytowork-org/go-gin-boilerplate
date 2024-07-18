@@ -3,14 +3,17 @@ package services
 import (
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/client"
-	"go.uber.org/zap"
 	"net/http"
 )
+
+type sLogger interface {
+	Info(args ...interface{})
+}
 
 type StripeConfig struct {
 	stripeSecretKey string
 	stripeProductID string
-	logger          *zap.SugaredLogger
+	logger          sLogger
 }
 
 type CustomerSubscription struct {
