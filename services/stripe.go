@@ -1,11 +1,20 @@
 package services
 
 import (
-	"boilerplate-api/internal/api_errors"
-	"boilerplate-api/internal/config"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/client"
+	"net/http"
 )
+
+type sLogger interface {
+	Info(args ...interface{})
+}
+
+type StripeConfig struct {
+	stripeSecretKey string
+	stripeProductID string
+	logger          sLogger
+}
 
 type CustomerSubscription struct {
 	StripePriceID    string
@@ -14,19 +23,24 @@ type CustomerSubscription struct {
 
 type StripeService struct {
 	*client.API
-	env config.Env
+	stripeProductID string
+}
+
+// StripeErrorResponse struct
+type StripeErrorResponse struct {
+	Message   string `json:"message"`
+	ErrorType int    `json:"error_type"`
 }
 
 func NewStripeService(
-	env config.Env,
-	logger config.Logger,
+	stripeConfig StripeConfig,
 ) StripeService {
 	_client := &client.API{}
-	_client.Init(env.StripeSecretKey, nil)
-	logger.Info("✅ Stripe client created.")
+	_client.Init(stripeConfig.stripeSecretKey, nil)
+	stripeConfig.logger.Info("✅ Stripe client created.")
 	return StripeService{
-		API: _client,
-		env: env,
+		API:             _client,
+		stripeProductID: stripeConfig.stripeProductID,
 	}
 }
 
@@ -79,12 +93,12 @@ func (service StripeService) CreateSubscription(
 func (service StripeService) UpdateSubscription(
 	stripeSubscriptionID string,
 	stripeParams *stripe.SubscriptionParams,
-) *api_errors.ErrorResponse {
+) *StripeErrorResponse {
 	_, err := service.Subscriptions.Update(stripeSubscriptionID, stripeParams)
 	if err != nil {
-		return &api_errors.ErrorResponse{
+		return &StripeErrorResponse{
 			Message:   "Errors while updating subscription",
-			ErrorType: api_errors.InternalError,
+			ErrorType: http.StatusInternalServerError,
 		}
 	}
 	return nil
@@ -93,12 +107,12 @@ func (service StripeService) UpdateSubscription(
 func (service StripeService) CancelSubscription(
 	stripeSubscriptionID string,
 	stripeParams *stripe.SubscriptionCancelParams,
-) *api_errors.ErrorResponse {
+) *StripeErrorResponse {
 	_, err := service.Subscriptions.Cancel(stripeSubscriptionID, stripeParams)
 	if err != nil {
-		return &api_errors.ErrorResponse{
+		return &StripeErrorResponse{
 			Message:   "Errors while canceling subscription",
-			ErrorType: api_errors.InternalError,
+			ErrorType: http.StatusInternalServerError,
 		}
 	}
 	return nil
@@ -106,9 +120,9 @@ func (service StripeService) CancelSubscription(
 
 func (service StripeService) CreatePrices(
 	title string, price int64,
-) (*stripe.Price, *api_errors.ErrorResponse) {
+) (*stripe.Price, *StripeErrorResponse) {
 	priceParams := stripe.PriceParams{
-		Product:    stripe.String(service.env.StripeProductID),
+		Product:    stripe.String(service.stripeProductID),
 		Currency:   stripe.String(string(stripe.CurrencyJPY)),
 		Nickname:   stripe.String(title),
 		UnitAmount: stripe.Int64(price),
@@ -118,8 +132,8 @@ func (service StripeService) CreatePrices(
 	}
 	prices, err := service.Prices.New(&priceParams)
 	if err != nil {
-		return nil, &api_errors.ErrorResponse{
-			ErrorType: api_errors.InternalError,
+		return nil, &StripeErrorResponse{
+			ErrorType: http.StatusInternalServerError,
 			Message:   "Error while creating price",
 		}
 	}
@@ -130,14 +144,14 @@ func (service StripeService) CreatePrices(
 func (service StripeService) UpdatePrices(
 	stripePriceID string,
 	priceParams *stripe.PriceParams,
-) (prices *stripe.Price, errResponse *api_errors.ErrorResponse) {
+) (prices *stripe.Price, errResponse *StripeErrorResponse) {
 	prices, err := service.Prices.Update(
 		stripePriceID,
 		priceParams,
 	)
 	if err != nil {
-		return nil, &api_errors.ErrorResponse{
-			ErrorType: api_errors.InternalError,
+		return nil, &StripeErrorResponse{
+			ErrorType: http.StatusInternalServerError,
 			Message:   "Error while updating price",
 		}
 	}
@@ -147,15 +161,15 @@ func (service StripeService) UpdatePrices(
 
 func (service StripeService) CreatePaymentIntent(
 	paymentParams *stripe.PaymentIntentParams,
-) (payment *stripe.PaymentIntent, errResponse *api_errors.ErrorResponse) {
+) (payment *stripe.PaymentIntent, errResponse *StripeErrorResponse) {
 	paymentMethod := stripe.PaymentIntentAutomaticPaymentMethodsParams{
 		Enabled: stripe.Bool(true),
 	}
 	paymentParams.AutomaticPaymentMethods = &paymentMethod
 	payment, err := service.PaymentIntents.New(paymentParams)
 	if err != nil {
-		return nil, &api_errors.ErrorResponse{
-			ErrorType: api_errors.InternalError,
+		return nil, &StripeErrorResponse{
+			ErrorType: http.StatusInternalServerError,
 			Message:   "Error while creating payment intent",
 		}
 	}
@@ -163,12 +177,12 @@ func (service StripeService) CreatePaymentIntent(
 
 }
 
-func (service StripeService) VoidInvoice(invoiceID string) *api_errors.ErrorResponse {
+func (service StripeService) VoidInvoice(invoiceID string) *StripeErrorResponse {
 	params := &stripe.InvoiceVoidInvoiceParams{}
 	if _, err := service.Invoices.VoidInvoice(invoiceID, params); err != nil {
-		return &api_errors.ErrorResponse{
+		return &StripeErrorResponse{
 			Message:   "Error while voiding invoice",
-			ErrorType: api_errors.InternalError,
+			ErrorType: http.StatusInternalServerError,
 		}
 	}
 	return nil

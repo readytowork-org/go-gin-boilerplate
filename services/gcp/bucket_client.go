@@ -1,38 +1,48 @@
 package gcp
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
 	"errors"
-
-	"boilerplate-api/internal/config"
-	"cloud.google.com/go/storage"
 	"google.golang.org/api/option"
 )
+
+type bucketClientLogger interface {
+	Fatalf(template string, args ...interface{})
+	Fatal(args ...interface{})
+	Error(args ...interface{})
+}
+
+type BucketClientConfig struct {
+	logger            bucketClientLogger
+	storageBucketName string
+	clientOption      *option.ClientOption
+}
 
 type BucketClient struct {
 	*storage.Client
 }
 
 // NewGCPBucketClient creates a new gcp bucket api client
-func NewGCPBucketClient(logger config.Logger, env config.Env, clientOption *option.ClientOption) BucketClient {
-	bucketName := env.StorageBucketName
+func NewGCPBucketClient(config BucketClientConfig) BucketClient {
+	bucketName := config.storageBucketName
 	ctx := context.Background()
 	if bucketName == "" {
-		logger.Error("Please check your env file for STORAGE_BUCKET_NAME")
+		config.logger.Error("Please check your env file for STORAGE_BUCKET_NAME")
 	}
-	client, err := storage.NewClient(ctx, *clientOption)
+	client, err := storage.NewClient(ctx, *config.clientOption)
 	if err != nil {
-		logger.Fatal(err.Error())
+		config.logger.Fatal(err.Error())
 	}
 
 	bucket := client.Bucket(bucketName)
 	_, err = bucket.Attrs(ctx)
 	if errors.Is(err, storage.ErrBucketNotExist) {
-		logger.Fatalf("Provided bucket %v doesn't exists", bucketName)
+		config.logger.Fatalf("Provided bucket %v doesn't exists", bucketName)
 	}
 
 	if err != nil {
-		logger.Fatalf("Cloud bucket error: %v", err.Error())
+		config.logger.Fatalf("Cloud bucket error: %v", err.Error())
 	}
 
 	bucketAttrsToUpdate := storage.BucketAttrsToUpdate{
@@ -45,7 +55,7 @@ func NewGCPBucketClient(logger config.Logger, env config.Env, clientOption *opti
 			}},
 	}
 	if _, err := bucket.Update(ctx, bucketAttrsToUpdate); err != nil {
-		logger.Fatalf("Cloud bucket update error: %v", err.Error())
+		config.logger.Fatalf("Cloud bucket update error: %v", err.Error())
 	}
 	return BucketClient{
 		client,

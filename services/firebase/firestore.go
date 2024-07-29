@@ -1,21 +1,33 @@
 package firebase
 
 import (
-	"boilerplate-api/internal/config"
 	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go"
 )
 
-// NewFirestoreClient creates new firestore client
-func NewFirestoreClient(logger config.Logger, app *firebase.App) *firestore.Client {
+type storeClientLogger interface {
+	Fatalf(template string, args ...interface{})
+}
+
+type StoreClientConfig struct {
+	logger storeClientLogger
+	app    *firebase.App
+}
+
+type StoreClientService struct {
+	*firestore.Client
+}
+
+// NewFireStoreClient creates new firestore client
+func NewFireStoreClient(config StoreClientConfig) StoreClientService {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	firestoreClient, err := app.Firestore(ctx)
+	firestoreClient, err := config.app.Firestore(ctx)
 	if err != nil {
-		logger.Fatalf("Firestore client: %v", err)
+		config.logger.Fatalf("Firestore client: %v", err)
 	}
 
-	return firestoreClient
+	return StoreClientService{Client: firestoreClient}
 }

@@ -1,42 +1,40 @@
 package gcp
 
 import (
-	"boilerplate-api/internal/config"
+	"cloud.google.com/go/billing/budgets/apiv1/budgetspb"
 	"context"
 	"fmt"
-
-	"cloud.google.com/go/billing/budgets/apiv1/budgetspb"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/iterator"
 	"google.golang.org/genproto/googleapis/type/money"
 )
 
+type billingServiceLogger interface {
+	Errorf(template string, args ...interface{})
+	Panic(args ...interface{})
+}
+
 // BillingService -> handles the gcp billing related functions
 type BillingService struct {
-	env          config.Env
-	logger       config.Logger
-	gcpBilling   BillingClient
-	budgetClient BudgetClient
+	projectName       string
+	billingAccountID  string
+	budgetDisplayName string
+	budgetAmount      int64
+	logger            billingServiceLogger
+	gcpBilling        BillingClient
+	budgetClient      BudgetClient
 }
 
 // NewGCPBillingService for the GCPBilling struct
 func NewGCPBillingService(
-	logger config.Logger,
-	env config.Env,
-	gcpBilling BillingClient,
-	budgetClient BudgetClient,
+	configService BillingService,
 ) BillingService {
-	return BillingService{
-		logger:       logger,
-		env:          env,
-		gcpBilling:   gcpBilling,
-		budgetClient: budgetClient,
-	}
+	return configService
 }
 
 // GetBillingInfo Get Billing info for certain date
 func (s BillingService) GetBillingInfo() (*cloudbilling.ProjectBillingInfo, error) {
-	projectName := fmt.Sprintf("projects/%s", s.env.ProjectName)
+	projectName := fmt.Sprintf("projects/%s", s.projectName)
 	billingInfo, err := s.gcpBilling.Projects.GetBillingInfo(projectName).Do()
 
 	return billingInfo, err
@@ -48,7 +46,7 @@ func (s BillingService) GetExistingBudgetList(
 ) (*budgetspb.Budget, error) {
 	var budgetList []*budgetspb.Budget
 	var err error
-	parentId := fmt.Sprintf("billingAccounts/%s", s.env.BillingAccountId)
+	parentId := fmt.Sprintf("billingAccounts/%s", s.billingAccountID)
 	req := budgetspb.ListBudgetsRequest{
 		Parent: parentId,
 	}
@@ -72,11 +70,11 @@ func (s BillingService) GetExistingBudgetList(
 }
 
 func (s BillingService) GetBudgetCreateUpdateRequest() *budgetspb.Budget {
-	projectName := fmt.Sprintf("projects/%s", s.env.ProjectName)
+	projectName := fmt.Sprintf("projects/%s", s.projectName)
 
 	budget := &budgetspb.Budget{
 		DisplayName: "Project Budget",
-		Name:        s.env.BudgetDisplayName,
+		Name:        s.budgetDisplayName,
 		BudgetFilter: &budgetspb.Filter{
 			CreditTypesTreatment: budgetspb.Filter_INCLUDE_ALL_CREDITS,
 			Projects:             []string{projectName},
@@ -84,7 +82,7 @@ func (s BillingService) GetBudgetCreateUpdateRequest() *budgetspb.Budget {
 		Amount: &budgetspb.BudgetAmount{
 			BudgetAmount: &budgetspb.BudgetAmount_SpecifiedAmount{
 				SpecifiedAmount: &money.Money{
-					Units:        s.env.BudgetAmount,
+					Units:        s.budgetAmount,
 					Nanos:        0,
 					CurrencyCode: "JPY",
 				},
@@ -113,7 +111,7 @@ func (s BillingService) GetBudgetCreateUpdateRequest() *budgetspb.Budget {
 }
 
 func (s BillingService) CreateBudget(ctx context.Context) (*budgetspb.Budget, error) {
-	parentId := fmt.Sprintf("billingAccounts/%s", s.env.BillingAccountId)
+	parentId := fmt.Sprintf("billingAccounts/%s", s.billingAccountID)
 	budget := s.GetBudgetCreateUpdateRequest()
 	createRequest := budgetspb.CreateBudgetRequest{
 		Parent: parentId,

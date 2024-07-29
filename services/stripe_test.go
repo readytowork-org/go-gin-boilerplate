@@ -90,8 +90,11 @@ func TestCreateCustomer(t *testing.T) {
 		".env",
 	)
 	stripeService := NewStripeService(
-		env,
-		config.GetLogger(),
+		StripeConfig{
+			stripeSecretKey: env.StripeSecretKey,
+			stripeProductID: env.StripeProductID,
+			logger:          config.GetLogger().SugaredLogger,
+		},
 	)
 	stripeBackendMock.On("Call",
 		mock.Anything,
@@ -139,8 +142,11 @@ func TestCreateSubscription(t *testing.T) {
 		".env",
 	)
 	stripeService := NewStripeService(
-		env,
-		config.GetLogger(),
+		StripeConfig{
+			stripeSecretKey: env.StripeSecretKey,
+			stripeProductID: env.StripeProductID,
+			logger:          config.GetLogger().SugaredLogger,
+		},
 	)
 	stripeBackendMock.On("Call",
 		mock.Anything,
@@ -175,8 +181,11 @@ func TestCreatePrices(t *testing.T) {
 		".env",
 	)
 	stripeService := NewStripeService(
-		env,
-		config.GetLogger(),
+		StripeConfig{
+			stripeSecretKey: env.StripeSecretKey,
+			stripeProductID: env.StripeProductID,
+			logger:          config.GetLogger().SugaredLogger,
+		},
 	)
 
 	stripeBackendMock.On("Call",
@@ -210,8 +219,11 @@ func TestPaymentIntent(t *testing.T) {
 		".env",
 	)
 	stripeService := NewStripeService(
-		env,
-		config.GetLogger(),
+		StripeConfig{
+			stripeSecretKey: env.StripeSecretKey,
+			stripeProductID: env.StripeProductID,
+			logger:          config.GetLogger().SugaredLogger,
+		},
 	)
 
 	stripeBackendMock.On("Call",

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/utils"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -24,36 +23,49 @@ type EmailParams struct {
 	Lang            string
 }
 
-type GmailService struct {
-	*gmail.Service
-	logger config.Logger
+type gLogger interface {
+	Fatal(args ...interface{})
 }
 
-func NewGmailService(logger config.Logger, env config.Env) GmailService {
+type GmailConfig struct {
+	clientID     string
+	clientSecret string
+	accessToken  string
+	refreshToken string
+	hostURL      string
+	logger       gLogger
+}
+
+type GmailService struct {
+	*gmail.Service
+	logger gLogger
+}
+
+func NewGmailService(gmailConfig GmailConfig) GmailService {
 	ctx := context.Background()
 
 	oauthConfig := oauth2.Config{
-		ClientID:     env.MailClientID,
-		ClientSecret: env.MailClientSecret,
+		ClientID:     gmailConfig.clientID,
+		ClientSecret: gmailConfig.clientSecret,
 		Endpoint:     google.Endpoint,
-		RedirectURL:  env.HOST, // e.g: "http://localhost" or deployed API url
+		RedirectURL:  gmailConfig.hostURL, // e.g: "http://localhost" or deployed API url
 		Scopes:       []string{"https://www.googleapis.com/auth/gmail.send"},
 	}
 	token := oauth2.Token{
-		AccessToken:  env.MailAccesstoken,
-		RefreshToken: env.MailRefreshToken,
+		AccessToken:  gmailConfig.accessToken,
+		RefreshToken: gmailConfig.refreshToken,
 		TokenType:    "Bearer",
 		Expiry:       time.Now(),
 	}
 	var tokenSource = oauthConfig.TokenSource(ctx, &token)
-	srv, err := gmail.NewService(ctx, option.WithTokenSource(tokenSource))
+	_service, err := gmail.NewService(ctx, option.WithTokenSource(tokenSource))
 	if err != nil {
-		logger.Fatal("failed to receive gmail client", err.Error())
+		gmailConfig.logger.Fatal("failed to receive gmail client", err.Error())
 	}
 
 	return GmailService{
-		Service: srv,
-		logger:  logger,
+		Service: _service,
+		logger:  gmailConfig.logger,
 	}
 }
 
