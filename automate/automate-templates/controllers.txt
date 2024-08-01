@@ -3,25 +3,25 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	"{{project_name}}/responses"
+	"{{project_name}}/api_response"
 	"{{project_name}}/api/services"
 	"{{project_name}}/infrastructure"
 	"{{project_name}}/models"
 	"{{project_name}}/url_query"
-	"{{project_name}}/errors"
+	"{{project_name}}/api_errors"
 
 	"github.com/gin-gonic/gin"
 )
 
 // {{uc_resource}}Controller struct
 type {{uc_resource}}Controller struct {
-	logger                 infrastructure.Logger
+	logger                 config.Logger
 	{{uc_resource}}Service  services.{{uc_resource}}Service
 }
 
 // New{{uc_resource}}Controller constructor
 func New{{uc_resource}}Controller(
-	logger infrastructure.Logger,
+	logger config.Logger,
 	{{uc_resource}}Service services.{{uc_resource}}Service,
 ) {{uc_resource}}Controller {
 	return {{uc_resource}}Controller{
@@ -30,138 +30,146 @@ func New{{uc_resource}}Controller(
 	}
 }
 
+//  @Tags			{{uc_resource}}
 //  @Summary		Create {{uc_resource}}
 //  @Description	Create {{uc_resource}}
-//  @Param			JSON body models.{{uc_resource}}{} true "Enter JSON"
-//	@Security		firebase || Bearer
+//  @Security		Bearer
 //  @Produce		application/json
-//  @Tags			{{uc_resource}}
-//  @Success		200 {object} responses.Message "OK"
-//  @Failure      	400 {object} responses.Error
+//  @Param			JSON body models.{{uc_resource}}{} true "Enter JSON"
+//  @Success		200 {object} json_response.Message "OK"
+//  @Failure      	400 {object} api_errors.Error
 //  @Router			/{{plural_resource_table}} [post]
-//  Create{{uc_resource}} Create {{uc_resource}}
+//  @Id				Create{{uc_resource}}
 func (cc {{uc_resource}}Controller) Create{{uc_resource}}(c *gin.Context) {
 	{{lc_resource}} := models.{{uc_resource}}{}
 
 	if err := c.ShouldBindJSON(&{{lc_resource}}); err != nil {
-		cc.logger.Zap.Error("Error [Create{{uc_resource}}] (ShouldBindJson) : ", err)
-		err := errors.BadRequest.Wrap(err, "Failed to bind {{uc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error [Create{{uc_resource}}] (ShouldBindJson) : ", err)
+		err := api_errors.BadRequest.Wrap(err, "Failed to bind {{uc_resource}}")
+		status, errM := api_errors.HandleError(err)
+        ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 
 	if _, err := cc.{{uc_resource}}Service.Create{{uc_resource}}({{lc_resource}}); err != nil {
-		cc.logger.Zap.Error("Error [Create{{uc_resource}}] [db Create{{uc_resource}}]: ", err.Error())
-		err := errors.BadRequest.Wrap(err, "Failed To Create {{uc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error [Create{{uc_resource}}] [db Create{{uc_resource}}]: ", err.Error())
+		err := api_errors.BadRequest.Wrap(err, "Failed To Create {{uc_resource}}")
+		status, errM := api_errors.HandleError(err)
+		ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 
-	responses.SuccessJSON(c, "{{uc_resource}} Created Successfully")
+	json_response.SuccessJSON(c, "{{uc_resource}} Created Successfully")
 }
 
-//  @Summary		Get all {{uc_resource}}.
-//  @Param			page_size query string false "10"
-//  @Param			page query string false "Page no" "1"
-//  @Param			keyword query string false "search by name"
-//  @Description	Return all the {{uc_resource}}
-//  @Produce		application/json
-//	@Security		firebase || Bearer
 //  @Tags			{{uc_resource}}
-//  @Success 		200 {array} responses.DataCount{data=[]models.{{uc_resource}}}
-//  @Failure      	500 {object} responses.Error
+//  @Summary		Get all {{uc_resource}}.
+//  @Description	Return all the {{uc_resource}}
+//  @Security		Bearer
+//  @Produce		application/json
+//  @Param			pagination	query		utils.Pagination	false	"query param"
+//  @Success 		200 {object} json_response.DataCount[models.{{uc_resource}}]
+//  @Failure      	500 {object} api_errors.Error
 //  @Router			/{{plural_resource_table}} [get]
-//  GetAll{{uc_resource}} Get All {{uc_resource}}
+//  @Id				GetAll{{uc_resource}}
 func (cc {{uc_resource}}Controller) GetAll{{uc_resource}}(c *gin.Context) {
-	pagination := url_query.BuildPagination[*url_query.Pagination](c)
+	pagination := url_query.BuildPagination[*utils.Pagination](c)
 	pagination.Sort = "created_at desc"
 
 	{{plc_resource}}, count, err := cc.{{uc_resource}}Service.GetAll{{uc_resource}}(pagination)
 	if err != nil {
-		cc.logger.Zap.Error("Error finding {{uc_resource}} records", err.Error())
-		err := errors.InternalError.Wrap(err, "Failed To Find {{uc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error finding {{uc_resource}} records", err.Error())
+		err := api_errors.InternalError.Wrap(err, "Failed To Find {{uc_resource}}")
+		status, errM := api_errors.HandleError(err)
+		ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 
-	responses.JSONCount(c, http.StatusOK, {{plc_resource}}, count)
+	json_response.JSONCount(c, http.StatusOK, {{plc_resource}}, count)
 }
 
+//  @Tags			{{uc_resource}}
 //  @Summary		Get one {{uc_resource}} by id
 //  @Description	Get one {{uc_resource}} by id
-//	@Security		firebase || Bearer
+//  @Security		Bearer
+//  @Param			id		path	int					true	"{{uc_resource}} ID"
 //  @Produce		application/json
-//  @Tags			{{uc_resource}}
-//  @Success 		200 {object} responses.Data{data=models.{{uc_resource}}}
-//  @Failure      	500 {object} responses.Error
+//  @Success 		200 {object} json_response.Data[models.{{uc_resource}}]
+//  @Failure      	500 {object} api_errors.Error
 //  @Router			/{{plural_resource_table}}/{id} [get]
-//  GetOne{{uc_resource}} Get One {{uc_resource}}
+//  @Id				GetOne{{uc_resource}}
 func (cc {{uc_resource}}Controller) GetOne{{uc_resource}}(c *gin.Context) {
 	ID, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 
 	{{lc_resource}}, err := cc.{{uc_resource}}Service.GetOne{{uc_resource}}(ID)
 	if err != nil {
-		cc.logger.Zap.Error("Error [GetOne{{uc_resource}}] [db GetOne{{uc_resource}}]: ", err.Error())
-		err := errors.InternalError.Wrap(err, "Failed To Find {{uc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error [GetOne{{uc_resource}}] [db GetOne{{uc_resource}}]: ", err.Error())
+		err := api_errors.InternalError.Wrap(err, "Failed To Find {{uc_resource}}")
+		status, errM := api_errors.HandleError(err)
+		ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 
-	responses.JSON(c, http.StatusOK, {{lc_resource}})
+	json_response.JSON(c, http.StatusOK, {{lc_resource}})
 }
 
+//  @Tags			{{uc_resource}}
 //  @Summary		Update One {{uc_resource}} By Id
 //  @Description	Update One {{uc_resource}} By Id
-//	@Security		firebase || Bearer
-//  @Param			data body models.{{uc_resource}} true "Enter JSON"
+//  @Security		Bearer
 //  @Produce		application/json
-//  @Tags			{{uc_resource}}
-//  @Success 		200 {object} responses.Message "OK"
-//  @Failure      	400 {object} responses.Error
-//  @Failure      	500 {object} responses.Error
+//  @Param			id		path	int					true	"{{uc_resource}} ID"
+//  @Param			data    body    models.{{uc_resource}} true "Enter JSON"
+//  @Success 		200 {object} json_response.Message "OK"
+//  @Failure      	400 {object} api_errors.Error
+//  @Failure      	500 {object} api_errors.Error
 //  @Router			/{{plural_resource_table}}/{id} [put]
-//  UpdateOne{{uc_resource}} Update One {{uc_resource}} By Id
+//  @Id				Create{{uc_resource}}
 func (cc {{uc_resource}}Controller) UpdateOne{{uc_resource}}(c *gin.Context) {
 	ID, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	{{lc_resource}} := models.{{uc_resource}}{}
 
 	if err := c.ShouldBindJSON(&{{lc_resource}}); err != nil {
-		cc.logger.Zap.Error("Error [Update{{uc_resource}}] (ShouldBindJson) : ", err)
-		err := errors.BadRequest.Wrap(err, "failed to update {{lc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error [Update{{uc_resource}}] (ShouldBindJson) : ", err)
+		err := api_errors.BadRequest.Wrap(err, "failed to update {{lc_resource}}")
+		status, errM := api_errors.HandleError(err)
+		ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 	{{lc_resource}}.ID = ID
 
 	if err := cc.{{uc_resource}}Service.UpdateOne{{uc_resource}}({{lc_resource}}); err != nil {
-		cc.logger.Zap.Error("Error [Update{{uc_resource}}] [db Update{{uc_resource}}]: ", err.Error())
-		err := errors.InternalError.Wrap(err, "failed to update {{lc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error [Update{{uc_resource}}] [db Update{{uc_resource}}]: ", err.Error())
+		err := api_errors.InternalError.Wrap(err, "failed to update {{lc_resource}}")
+		status, errM := api_errors.HandleError(err)
+		ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 
-	responses.SuccessJSON(c, "{{uc_resource}} Updated Successfully")
+	json_response.SuccessJSON(c, "{{uc_resource}} Updated Successfully")
 }
 
+//  @Tags			{{uc_resource}}
 //  @Summary		Delete One {{uc_resource}} By Id
 //  @Description	Delete One {{uc_resource}} By Id
-//	@Security		firebase || Bearer
+//  @Security		Bearer
 //  @Produce		application/json
-//  @Tags			{{uc_resource}}
-//  @Success 		200 {object} responses.Message
-//  @Failure      	500 {object} responses.Error
+//  @Param			id		path	int					true	"{{uc_resource}} ID"
+//  @Success 		200 {object} api_errors.Message
+//  @Failure      	500 {object} api_errors.Error
 //  @Router			/{{plural_resource_table}}/{id} [delete]
-//  DeleteOne{{uc_resource}} Delete One {{uc_resource}} By Id
+//  @Id				DeleteOne{{uc_resource}}
 func (cc {{uc_resource}}Controller) DeleteOne{{uc_resource}}(c *gin.Context) {
 	ID, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 
 	err := cc.{{uc_resource}}Service.DeleteOne{{uc_resource}}(ID)
 	if err != nil {
-		cc.logger.Zap.Error("Error [DeleteOne{{uc_resource}}] [db DeleteOne{{uc_resource}}]: ", err.Error())
-		err := errors.InternalError.Wrap(err, "Failed to Delete {{uc_resource}}")
-		responses.HandleError(c, err)
+		cc.logger.Error("Error [DeleteOne{{uc_resource}}] [db DeleteOne{{uc_resource}}]: ", err.Error())
+		err := api_errors.InternalError.Wrap(err, "Failed to Delete {{uc_resource}}")
+		status, errM := api_errors.HandleError(err)
+		ctx.JSON(status, json_response.Error{Error: errM})
 		return
 	}
 
-	responses.SuccessJSON(c, "{{uc_resource}} Deleted Successfully")
+	json_response.SuccessJSON(c, "{{uc_resource}} Deleted Successfully")
 }

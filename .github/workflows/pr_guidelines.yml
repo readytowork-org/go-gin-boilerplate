@@ -1,0 +1,50 @@
+# This workflow will triage pull requests and apply a label based on the
+# paths that are modified in the pull request.
+#
+# To use this workflow, you will need to set up a .github/labeler.yml
+# file with configuration.  For more information, see:
+# https://github.com/actions/labeler
+
+name: PR Review Guidelines
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  pr_guidelines:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message: |  
+            **swagger comments**
+  
+            - [ ]  route
+            - [ ] method type
+            - [ ] request body
+            - [ ] query params
+            - [ ] response data
+  
+            **Code Quality**
+  
+            - [ ] Naming Convention
+            - [ ] Consistency
+            
+            * [ ] receiver name of method must be same in all methods
+  
+            :x:
+            ```go
+            func (c AdminController) ValidateEmail(ctx *gin.Context)
+  
+            func (cc AdminController) CreateAdmin(ctx *gin.Context)
+            ```
+            :white_check_mark:
+            ```go
+            func (c AdminController) ValidateEmail(ctx *gin.Context)
+  
+            func (c AdminController) CreateAdmin(ctx *gin.Context)
+            ```

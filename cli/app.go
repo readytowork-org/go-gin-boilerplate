@@ -1,8 +1,7 @@
 package cli
 
 import (
-	"boilerplate-api/infrastructure"
-
+	"boilerplate-api/internal/config"
 	"github.com/manifoldco/promptui"
 )
 
@@ -14,30 +13,26 @@ type Command interface {
 
 // Application cli application
 type Application struct {
-	logger   infrastructure.Logger
+	logger   config.Logger
 	commands []Command
 }
 
 // NewApplication creates new cli application
 func NewApplication(
-	logger infrastructure.Logger,
-	createAdminUser CreateAdminUser,
-	createDummyAdminUser CreateDummyAdminUser,
+	logger config.Logger,
 	createSeedData CreateSeedData,
 ) Application {
 	return Application{
 		logger: logger,
 		commands: []Command{
-			createAdminUser,
 			createSeedData,
-			createDummyAdminUser,
 		},
 	}
 }
 
 // Start starts cli application
 func (c Application) Start() {
-	c.logger.Zap.Info("⛑  Start CLI...")
+	c.logger.Info("⛑  Start CLI...")
 	var names []string
 	commandMap := map[string]Command{}
 
@@ -56,11 +51,11 @@ func (c Application) Start() {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		c.logger.Zap.Error("prompt failed")
+		c.logger.Error("prompt failed")
 	}
 
 	if result == "EXIT_APPLICATION" {
-		c.logger.Zap.Info("CLI Application Exited")
+		c.logger.Info("CLI Application Exited")
 		return
 	}
 

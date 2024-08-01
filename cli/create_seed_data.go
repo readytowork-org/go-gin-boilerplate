@@ -1,31 +1,30 @@
 package cli
 
 import (
-	"boilerplate-api/infrastructure"
-	"boilerplate-api/seeds"
+	"boilerplate-api/internal/config"
 )
 
 // CreateSeedData command
 type CreateSeedData struct {
-	logger infrastructure.Logger
-	seeds  seeds.Seeds
+	logger config.Logger
+	//seeds  seeds.Seeds
 }
 
 // NewCreateSeedData creates instance of admin user
 func NewCreateSeedData(
-	logger infrastructure.Logger,
-	seeds seeds.Seeds,
+	logger config.Logger,
+//seeds seeds.Seeds,
 ) CreateSeedData {
 	return CreateSeedData{
 		logger: logger,
-		seeds:  seeds,
+		//seeds:  seeds,
 	}
 }
 
 // Run runs command
 func (c CreateSeedData) Run() {
-	c.logger.Zap.Info("🌱 Creating seed data...")
-	c.seeds.Run()
+	c.logger.Info("🌱 Creating seed data...")
+	//c.seeds.Run()
 }
 
 // Name return name of command

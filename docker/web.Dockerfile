@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine
+FROM golang:1.22-alpine
 
 # add user group
 # RUN addgroup -S nonroot \

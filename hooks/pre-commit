@@ -44,29 +44,21 @@ If you know what you are doing you can disable this check using:
 EOF
 	exit 1
 fi
-# If there are whitespace errors, print the offending file names and fail.
-git diff-index --check --cached $against --
 
 # Get the list of staged Go files
-GO_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep '.go$')
 NORMAL=$(tput sgr0)
 LIME_YELLOW=$(tput setaf 190)
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 
+# fix swag formatting
+swag fmt
 
-if [ -n "$GO_FILES" ]; then
-  # Run gofmt on each staged Go file
-    for FILE in $GO_FILES; do
-        gofmt -w $FILE
-    done
-fi
-
-$(go env GOPATH)/bin/golangci-lint run 
+$(go env GOPATH)/bin/golangci-lint run
 if [[ $? != 0 ]]; then
 	printf "${RED}Linting failed! ${NORMAL}Please fix errors before committing.\n"
 	exit 1
 fi
 git add $GO_FILES
-echo "Go code formatting applied suåccessfully."
+echo "Go code formatting applied successfully."

@@ -1,14 +1,47 @@
-## Boilerplate API
+# Demo API
 
-Boilerplate API template includes all the common packages and setup used for API development in this Company.
+Demo API template includes all the common packages and setup used for API development in this Company.
 
-### Development
+## Development
 
 - Copy `.env.example` to `.env` and update according to requirement.
 - Create `serviceAccountKey.json` file for firebase admin sdk.
 - To run `docker-compose up` (with default configuration will run at `5000` and adminer runs at `5001`)
 
-#### Run Boilerplate CLI 🖥
+## Swagger docs config
+
+**Note:** client will generate schema from swagger docs so, please follow these configurations
+
+- ### Struct
+
+  - use **validate:"required"** tag to insure generated fields/keys are not null/optional.
+    ```go
+    type User struct {
+        Name string  `json:"name" validate:"required"`
+    }
+    ```
+    will be generated as
+    ```ts
+    interface User {
+      name: string;
+    }
+    ```
+    else
+    ```ts
+    interface User {
+      name?: string;
+    }
+    ```
+
+- ### Function Comments
+
+  - Using `// @Tags` for User and Admin Access endpoints
+    - For easy navigation and understanding, utilize distinct @Tags values for endpoints accessible by users and admins. For instance,
+    - use:
+      - `// @Tags UserApi` for endpoints under /users accessible to regular users.
+      - `// @Tags UserManagementApi` for endpoints under /users restricted to administrative access.
+
+## Run CLI 🖥
 
 - Run `docker-compose exec web sh`
 - After running type `./__debug_bin cli` you will start cli application.
@@ -45,7 +78,7 @@ Implemented through docker image as follows
 | `make drop`         | Drop everything inside database                    |
 | `make create`       | Create new migration file(up & down)               |
 | `make crud`         | Create crud template                               |
-| `swag-generate`     | Run this command to generate swag docs             |
+| `make swag`         | Run this command to generate swag docs             |
 
 ### Implemented Feature
 
