@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"boilerplate-api/internal/constants"
-	"boilerplate-api/internal/types"
 	"firebase.google.com/go"
 
 	"firebase.google.com/go/auth"
@@ -42,6 +41,8 @@ type AuthErrorResponse struct {
 	ErrorType int    `json:"error_type"`
 }
 
+type claimsMap map[string]interface{}
+
 // NewFirebaseAuthService creates new firebase service
 func NewFirebaseAuthService(config AuthConfig) AuthService {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -59,7 +60,7 @@ func NewFirebaseAuthService(config AuthConfig) AuthService {
 
 // Create creates a new user with email and password
 func (fb *AuthService) Create(
-	userRequest AuthUser, setClaims ...func(claims types.MapString) types.MapString) (
+	userRequest AuthUser, setClaims ...func(claims claimsMap) claimsMap) (
 	string, *AuthErrorResponse) {
 
 	params := (&auth.UserToCreate{}).
@@ -86,7 +87,7 @@ func (fb *AuthService) Create(
 		}
 	}
 
-	claims := types.MapString{constants.Roles.Key: userRequest.Role}
+	claims := claimsMap{constants.Roles.Key: userRequest.Role}
 
 	for _, setClaim := range setClaims {
 		claims = setClaim(claims)
@@ -104,7 +105,7 @@ func (fb *AuthService) Create(
 
 // CreateUser creates a new user with email and password
 func (fb *AuthService) CreateUser(userRequest AuthUser) (string, *AuthErrorResponse) {
-	return fb.Create(userRequest, func(claims types.MapString) types.MapString {
+	return fb.Create(userRequest, func(claims claimsMap) claimsMap {
 		claims[constants.Claims.UserId.Name()] = userRequest.UserID
 		return claims
 	})
@@ -112,7 +113,7 @@ func (fb *AuthService) CreateUser(userRequest AuthUser) (string, *AuthErrorRespo
 
 // CreateAdmin creates a new admin with email and password
 func (fb *AuthService) CreateAdmin(userRequest AuthUser) (string, *AuthErrorResponse) {
-	return fb.Create(userRequest, func(claims types.MapString) types.MapString {
+	return fb.Create(userRequest, func(claims claimsMap) claimsMap {
 		if userRequest.Role != constants.Roles.Admin.ToString() {
 			claims[constants.Claims.AdminId.ToString()] = userRequest.AdminID
 		}

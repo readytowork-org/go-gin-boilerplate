@@ -5,14 +5,12 @@ import (
 	"strings"
 
 	"boilerplate-api/internal/constants"
-	"boilerplate-api/internal/types"
-
 	"firebase.google.com/go/auth"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 )
 
-type SetClaims func(ctx *gin.Context, claims types.MapString) *errorResponse
+type SetClaims func(ctx *gin.Context, claims map[string]interface{}) *errorResponse
 
 // AuthMiddleware structure
 type AuthMiddleware struct {
@@ -69,7 +67,7 @@ func (f AuthMiddleware) HandleAuth(setClaims ...SetClaims) gin.HandlerFunc {
 
 // HandleUserAuth Handle handles auth requests
 func (f AuthMiddleware) HandleUserAuth() gin.HandlerFunc {
-	return f.HandleAuth(func(c *gin.Context, claims types.MapString) *errorResponse {
+	return f.HandleAuth(func(c *gin.Context, claims map[string]interface{}) *errorResponse {
 		role := claims[constants.Roles.Key].(constants.Role)
 		if role != constants.Roles.User {
 			return &errorResponse{
@@ -88,7 +86,7 @@ func (f AuthMiddleware) HandleUserAuth() gin.HandlerFunc {
 
 // HandleAdminAuth handles middleware for roles
 func (f AuthMiddleware) HandleAdminAuth(allowedRoles ...constants.Role) gin.HandlerFunc {
-	return f.HandleAuth(func(c *gin.Context, claims types.MapString) *errorResponse {
+	return f.HandleAuth(func(c *gin.Context, claims map[string]interface{}) *errorResponse {
 		role := claims[constants.Roles.Key].(constants.Role)
 		if len(allowedRoles) > 0 {
 			if !f.checkRoles(role, allowedRoles) {
