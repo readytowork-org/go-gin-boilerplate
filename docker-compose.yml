@@ -15,6 +15,18 @@ services:
     depends_on:
       - database
 
+  cloud-sql-proxy:
+    build:
+      context: .
+      dockerfile: ./docker/cloud.Dockerfile
+    ports:
+      - "33068:3306"
+    env_file:
+      - .env
+    volumes:
+      - ./serviceAccountKey.json:/secrets/cloudsql/serviceAccountKey.json:ro
+    container_name: cloud-sql-proxy
+
   database:
     build:
       context: .

@@ -9,6 +9,7 @@ Demo API template includes all the common packages and setup used for API develo
 - To run `docker-compose up` (with default configuration will run at `5000` and adminer runs at `5001`)
 
 ## Swagger docs config
+
 **Note:** client will generate schema from swagger docs so, please follow these configurations
 
 - ### Struct
@@ -22,25 +23,23 @@ Demo API template includes all the common packages and setup used for API develo
     will be generated as
     ```ts
     interface User {
-        name: string
+      name: string;
     }
     ```
     else
     ```ts
     interface User {
-        name?: string
+      name?: string;
     }
     ```
-
 
 - ### Function Comments
 
   - Using `// @Tags` for User and Admin Access endpoints
-    - For easy navigation and understanding, utilize distinct @Tags values for endpoints accessible by users and admins. For instance, 
-    - use: 
-      - ``// @Tags UserApi`` for endpoints under /users accessible to regular users.
-      - ``// @Tags UserManagementApi`` for endpoints under /users restricted to administrative access.
-
+    - For easy navigation and understanding, utilize distinct @Tags values for endpoints accessible by users and admins. For instance,
+    - use:
+      - `// @Tags UserApi` for endpoints under /users accessible to regular users.
+      - `// @Tags UserManagementApi` for endpoints under /users restricted to administrative access.
 
 ## Run CLI 🖥
 
@@ -50,21 +49,36 @@ Demo API template includes all the common packages and setup used for API develo
 - To run `docker-compose up` ( with default configuration will run at 5000 and adminer runs at 5001)
 - To run with setting up pre-commit hook `make start` ( with default configuration will run at 5000 and adminer runs at 5001`)
 
+## Implements Google Cloud Proxy by default
+
+This reduces hassle for developer to update IP in Cloud SQL during IP Change.
+
+Implemented through docker image as follows
+
+- Cloud SQL -> Google Proxy Docker Image -> Web App
+
+#### Points to remember for smooth working
+
+- `ServiceAccountKey.json` requires Cloud SQL Read and Write Permission
+- `DB_HOST_NAME` value in `.env` is required
+- `DB_HOST=cloud-sql-proxy` instead of `IPV4` or `DB_HOST_NAME` for development environment
+- `DB_PORT` will be `3306` by default
+
 #### Migration Commands 🛳
 
-| Command             | Desc                                                 |
-|---------------------| ---------------------------------------------------- |
-| `make install`      | installs goalngci-lint and change the hooks config   |
-| `make start`        | setup pre-commit hook and runs the project           |
-| `make run`          | runs the project                                     |
-| `make migrate-up`   | runs migration up command                            |
-| `make migrate-down` | runs migration down command                          |
-| `make force`        | Set particular version but don't run migration       |
-| `make goto`         | Migrate to particular version                        |
-| `make drop`         | Drop everything inside database                      |
-| `make create`       | Create new migration file(up & down)                 |
-| `make crud`         | Create crud template                                 |
-| `make swag`         | Run this command to generate swag docs               |
+| Command             | Desc                                               |
+| ------------------- | -------------------------------------------------- |
+| `make install`      | installs goalngci-lint and change the hooks config |
+| `make start`        | setup pre-commit hook and runs the project         |
+| `make run`          | runs the project                                   |
+| `make migrate-up`   | runs migration up command                          |
+| `make migrate-down` | runs migration down command                        |
+| `make force`        | Set particular version but don't run migration     |
+| `make goto`         | Migrate to particular version                      |
+| `make drop`         | Drop everything inside database                    |
+| `make create`       | Create new migration file(up & down)               |
+| `make crud`         | Create crud template                               |
+| `make swag`         | Run this command to generate swag docs             |
 
 ### Implemented Feature
 
