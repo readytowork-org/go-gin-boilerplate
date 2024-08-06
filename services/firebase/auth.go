@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"boilerplate-api/internal/constants"
 	"firebase.google.com/go"
 
 	"firebase.google.com/go/auth"
@@ -87,7 +86,7 @@ func (fb *AuthService) Create(
 		}
 	}
 
-	claims := claimsMap{constants.Roles.Key: userRequest.Role}
+	claims := claimsMap{Roles.Key: userRequest.Role}
 
 	for _, setClaim := range setClaims {
 		claims = setClaim(claims)
@@ -106,7 +105,7 @@ func (fb *AuthService) Create(
 // CreateUser creates a new user with email and password
 func (fb *AuthService) CreateUser(userRequest AuthUser) (string, *AuthErrorResponse) {
 	return fb.Create(userRequest, func(claims claimsMap) claimsMap {
-		claims[constants.Claims.UserId.Name()] = userRequest.UserID
+		claims[Claims.UserId.Name()] = userRequest.UserID
 		return claims
 	})
 }
@@ -114,8 +113,8 @@ func (fb *AuthService) CreateUser(userRequest AuthUser) (string, *AuthErrorRespo
 // CreateAdmin creates a new admin with email and password
 func (fb *AuthService) CreateAdmin(userRequest AuthUser) (string, *AuthErrorResponse) {
 	return fb.Create(userRequest, func(claims claimsMap) claimsMap {
-		if userRequest.Role != constants.Roles.Admin.ToString() {
-			claims[constants.Claims.AdminId.ToString()] = userRequest.AdminID
+		if userRequest.Role != Roles.Admin.ToString() {
+			claims[Claims.AdminId.ToString()] = userRequest.AdminID
 		}
 		return claims
 	})
