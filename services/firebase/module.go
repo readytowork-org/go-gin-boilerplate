@@ -45,5 +45,4 @@ var Module = fx.Module("firebase", fx.Options(
 				app:    appService.App,
 			})
 	}),
-	fx.Provide(NewFirebaseAuthMiddleware),
 ))
