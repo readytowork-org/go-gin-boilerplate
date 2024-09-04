@@ -3,15 +3,11 @@ package services
 import (
 	"boilerplate-api/internal/config"
 	"boilerplate-api/services/aws"
-	"boilerplate-api/services/firebase"
-	"boilerplate-api/services/gcp"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
-	firebase.Module,
 	aws.Module,
-	gcp.Module,
 	// StripeService provider
 	fx.Provide(func(
 		env config.Env,
