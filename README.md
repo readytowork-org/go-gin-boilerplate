@@ -1,45 +1,42 @@
-# Demo API
+# Go Gin Skeleton
 
-Demo API template includes all the common packages and setup used for API development in this Company.
+> **Go Gin Skeleton template includes all the common packages and setup used for API development using [gin](https://gin-gonic.com).**
+
+## Implemented Feature
+
+- Dependency Injection: [fx](https://github.com/uber-go/fx)
+- Routing: [gin web framework](https://gin-gonic.com)
+- Logging: [zap](https://github.com/uber-go/zap)
+- Database (mysql)
+- ORM: [gorm](https://gorm.io/docs)
+- Middlewares (cors)
+- Rate Limiting Middleware
+- Transaction Middleware
+
+**For Debugging 🐞** Debugger runs at `5002`. Vs code configuration is at `.vscode/launch.json` which will attach debugger to remote application.
 
 ## Development
 
 - Copy `.env.example` to `.env` and update according to requirement.
-- Create `serviceAccountKey.json` file for firebase admin sdk.
-- To run `docker-compose up` (with default configuration will run at `5000` and adminer runs at `5001`)
+- #### Running using Docker
+  - run `docker-compose up` (with default configuration will run at `5000` and adminer runs at `5001`)
+- #### Running using Gin Watch
+  - run `make dev`
+
+## External Services
+> Run `go get <package name>` to install.
+
+#### Firebase
+  - Package name: github.com/readytowork-org/go_firebase_service
+  - Github: https://github.com/readytowork-org/go_firebase_service
+
+#### GCP
+  - Package name: github.com/readytowork-org/go_gcp_service
+  - Github: https://github.com/readytowork-org/go_gcp_service
+
 
 ## Swagger docs config
-
-**Note:** client will generate schema from swagger docs so, please follow these configurations
-
-- ### Struct
-
-  - use **validate:"required"** tag to insure generated fields/keys are not null/optional.
-    ```go
-    type User struct {
-        Name string  `json:"name" validate:"required"`
-    }
-    ```
-    will be generated as
-    ```ts
-    interface User {
-      name: string;
-    }
-    ```
-    else
-    ```ts
-    interface User {
-      name?: string;
-    }
-    ```
-
-- ### Function Comments
-
-  - Using `// @Tags` for User and Admin Access endpoints
-    - For easy navigation and understanding, utilize distinct @Tags values for endpoints accessible by users and admins. For instance,
-    - use:
-      - `// @Tags UserApi` for endpoints under /users accessible to regular users.
-      - `// @Tags UserManagementApi` for endpoints under /users restricted to administrative access.
+> Please refer to [SWAGGER.md](https://github.com/readytowork-org/go-gin-skeleton/blob/develop/SWAGGER.md)
 
 ## Run CLI 🖥
 
@@ -79,29 +76,6 @@ Implemented through docker image as follows
 | `make create`       | Create new migration file(up & down)               |
 | `make crud`         | Create crud template                               |
 | `make swag`         | Run this command to generate swag docs             |
-
-### Implemented Feature
-
-- Dependency Injection (go-fx)
-- Routing (gin web framework)
-- Environment Files
-- Logging (file saving on production) zap
-- Middlewares (cors)
-- Rate Limiting Middleware
-- Middleware transaction
-- Database Setup (mysql)
-- Models Setup and Automigrate (gorm)
-- Repositories
-- Implementing Basic CRUD Operation
-- CRUD Scaffold Generator
-- Migration Runner Implementation
-- Live code refresh
-- Firebase basic setup.
-- GCP Cloud Storage bucket setup.
-- Twilio Basic setup.
-- Gmail Api Setup.
-
-**For Debugging 🐞** Debugger runs at `5002`. Vs code configuration is at `.vscode/launch.json` which will attach debugger to remote application.
 
 ## For auto generate of CRUD(Create, ReaD, Update & Delete) api following informations are needed and will be asked in terminal:
 
