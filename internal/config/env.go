@@ -16,12 +16,14 @@ type Env struct {
 	LogOutput   string `mapstructure:"LOG_OUTPUT"`
 	LogLevel    string `mapstructure:"LOG_LEVEL"`
 
+	DBType     string `mapstructure:"DB_TYPE"`
 	DBUsername string `mapstructure:"DB_USERNAME"`
 	DBPassword string `mapstructure:"DB_PASSWORD"`
 	DBHost     string `mapstructure:"DB_HOST"`
 	DBPort     string `mapstructure:"DB_PORT"`
 	DBName     string `mapstructure:"DB_NAME"`
-	SentryDSN  string `mapstructure:"SENTRY_DSN"`
+
+	SentryDSN string `mapstructure:"SENTRY_DSN"`
 
 	StorageBucketName string `mapstructure:"STORAGE_BUCKET_NAME"`
 

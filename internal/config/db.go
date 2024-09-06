@@ -2,6 +2,7 @@ package config
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -17,56 +18,100 @@ import (
 // Database modal
 type Database struct {
 	*gorm.DB
+	dsn             string
+	dbType          DBType
+	ConnectionError *error
 }
 
 // NewDatabase creates a new database instance
-func NewDatabase(logger Logger, dsnConfig DSNConfig) Database {
-	mysqlDSNConfig := goMySql.Config{
-		User:                 dsnConfig.UserName,
-		Passwd:               dsnConfig.Password,
-		Net:                  dsnConfig.Network,
-		Addr:                 dsnConfig.Address,
-		ParseTime:            dsnConfig.ParseTime,
-		Loc:                  dsnConfig.TimeLocation,
-		AllowNativePasswords: true,
-		CheckConnLiveness:    true,
+func NewDatabase(logger Logger, dsnConfig DSNConfig) *Database {
+	database := Database{
+		dbType: dsnConfig.DBType,
 	}
-	logger.Infof("DSN :: %+v\n", mysqlDSNConfig)
 
-	db, err := gorm.Open(
-		mysql.New(mysql.Config{DSNConfig: &mysqlDSNConfig}),
-		&gorm.Config{Logger: logger.GetGormLogger()},
-	)
-	if err != nil {
-		logger.Panicf("Database connection failed :: %+v\n", err)
+	var dialector *gorm.Dialector
+
+	switch database.dbType {
+	case DBTypeSql:
+		mysqlDSNConfig := goMySql.Config{
+			User:                 dsnConfig.UserName,
+			Passwd:               dsnConfig.Password,
+			Net:                  dsnConfig.Network,
+			Addr:                 dsnConfig.Address,
+			ParseTime:            dsnConfig.ParseTime,
+			Loc:                  dsnConfig.TimeLocation,
+			AllowNativePasswords: true,
+			CheckConnLiveness:    true,
+		}
+		_dialector := mysql.New(
+			mysql.Config{
+				DSNConfig: &mysqlDSNConfig,
+			},
+		)
+		dialector = &_dialector
+
+		database.dsn = mysqlDSNConfig.FormatDSN()
+		break
 	}
+
+	if dialector == nil || database.dsn == "" || dsnConfig.Address == "" {
+		err := errors.New("database not configured --- Using Mock Database")
+		logger.Error(err)
+
+		database = *NewMockDatabase()
+		database.ConnectionError = &err
+		return &database
+	}
+
+	db, err := gorm.Open(*dialector, &gorm.Config{Logger: logger.GetGormLogger()})
+	if err != nil {
+		_err := errors.New(
+			fmt.Sprintf(
+				"Database connection failed\n Please check dsn:: %+v\n+%v", database.dsn, err.Error(),
+			),
+		)
+		logger.Error(_err)
+		database.ConnectionError = &_err
+		return &database
+	}
+	database.DB = db
 
 	logger.Info("creating database if it doesn't exist")
 	if err = db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", dsnConfig.DBName)).Error; err != nil {
-		logger.Info("couldn't create database")
-		logger.Panic(err)
+		logger.Error("Couldn't create database")
+		database.ConnectionError = &err
+		return &database
 	}
+
 	logger.Info("using given database")
 	if err = db.Exec(fmt.Sprintf("USE %s", dsnConfig.DBName)).Error; err != nil {
-		logger.Info("cannot use the given database")
-		logger.Panic(err)
+		logger.Error("Cannot use the given database")
+		database.ConnectionError = &err
+		return &database
 	}
 
 	logger.Infof("Database connection established : %s", db.Migrator().CurrentDatabase())
 
-	return Database{
-		db,
-	}
+	return &database
+}
+
+func (d Database) DSN() string {
+	return d.dsn
+}
+
+func (d Database) Type() string {
+	return d.dbType.ToString()
 }
 
 // MockDatabase modal
 type MockDatabase struct {
-	Database
+	*Database
 	sqlDb   *sql.DB
 	sqlMock sqlmock.Sqlmock
 }
 
-func NewMockDatabase() Database {
+func NewMockDatabase() *Database {
+	var connectionError *error
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -78,32 +123,34 @@ func NewMockDatabase() Database {
 
 	sqlDb, sqlMock, err := sqlmock.New()
 	if err != nil {
-		log.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+		globalLog.Error("error opening a stub database connection")
+		connectionError = &err
 	}
 	sqlMock.ExpectBegin()
 	sqlMock.ExpectCommit()
 	sqlMock.ExpectRollback()
 
-	db, err := gorm.Open(mysql.New(mysql.Config{
-		Conn:                      sqlDb,
-		SkipInitializeWithVersion: true,
-	}), &gorm.Config{
-		DryRun: true,
-		Logger: newLogger,
-	})
-
-	//var columns = models.UserName{}.Columns()
-	//// Add mock data to mock sql columns
-	//now := time.Now()
-	//rows := sqlMock.NewRows(columns).
-	//	AddRow(now, now, nil, 1, "firebase_id", "jhon@mailinator.com", constants.UnVerifiedEmail, nil, "Jhon", "male", 20, "january", "93234242342", "234234").
-	//	AddRow(now, now, nil, 1, "firebase_id", "jhon@mailinator.com", constants.UnVerifiedEmail, nil, "Jhon", "male", 20, "january", "93234242342", "234234")
+	db, err := gorm.Open(
+		mysql.New(
+			mysql.Config{
+				Conn:                      sqlDb,
+				SkipInitializeWithVersion: true,
+			},
+		), &gorm.Config{
+			DryRun: true,
+			Logger: newLogger,
+		},
+	)
 
 	if err != nil {
-		log.Fatalf("An error '%s' was not expected when opening gorm database", err)
+		globalLog.Errorf("An error was not expected when opening gorm database")
+		connectionError = &err
 	}
 
-	return Database{
-		DB: db,
+	return &Database{
+		DB:              db,
+		dsn:             "",
+		dbType:          DBTypeSql,
+		ConnectionError: connectionError,
 	}
 }

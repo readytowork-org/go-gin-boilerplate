@@ -1,10 +1,11 @@
 package middlewares
 
 import (
+	"net/http"
+
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/constants"
 	"boilerplate-api/internal/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,13 +13,13 @@ import (
 // DBTransactionMiddleware struct for transaction
 type DBTransactionMiddleware struct {
 	logger config.Logger
-	db     config.Database
+	db     *config.Database
 }
 
 // NewDBTransactionMiddleware new instance of transaction
 func NewDBTransactionMiddleware(
 	logger config.Logger,
-	db config.Database,
+	db *config.Database,
 ) DBTransactionMiddleware {
 	return DBTransactionMiddleware{
 		logger: logger,

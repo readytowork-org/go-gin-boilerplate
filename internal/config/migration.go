@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 
-	goMySql "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -19,31 +18,24 @@ type Migrations struct {
 
 // NewMigrations return new Migrations struct
 func NewMigrations(
-	dsnConfig DSNConfig,
 	logger Logger,
 	envPath EnvPath,
-) Migrations {
+	db *Database,
+) *Migrations {
 	path := getMigrationFolder(envPath.ToString())
 	path = fmt.Sprintf("file://%s/", path)
 
-	mysqlDSNConfig := goMySql.Config{
-		User:                 dsnConfig.UserName,
-		Passwd:               dsnConfig.Password,
-		DBName:               dsnConfig.DBName,
-		Net:                  dsnConfig.Network,
-		Addr:                 dsnConfig.Address,
-		ParseTime:            dsnConfig.ParseTime,
-		Loc:                  dsnConfig.TimeLocation,
-		AllowNativePasswords: true,
-		CheckConnLiveness:    true,
+	if db.ConnectionError != nil {
+		logger.Info("!!! Skipping Migrations !!!")
+		return &Migrations{}
 	}
 
-	migrator, err := migrate.New(path, fmt.Sprintf("mysql://%+v", mysqlDSNConfig.FormatDSN()))
+	migrator, err := migrate.New(path, fmt.Sprintf("%v://%v", db.Type(), db.DSN()))
 	if err != nil {
-		logger.Panic("Error in migration: ", err.Error())
+		logger.Panic("Error in migration: ", err)
 	}
 
-	return Migrations{
+	return &Migrations{
 		logger:   logger,
 		migrator: migrator,
 	}

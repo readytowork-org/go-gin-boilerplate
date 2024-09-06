@@ -31,9 +31,9 @@ func bootstrap(
 	handler router.Router,
 	env config.Env,
 	logger config.Logger,
-	database config.Database,
+	database *config.Database,
 	cliApp cli.Application,
-	migrations config.Migrations,
+	migrations *config.Migrations,
 ) {
 
 	appStop := func(context.Context) error {
@@ -44,44 +44,52 @@ func bootstrap(
 	}
 
 	if utils.IsCli() {
-		lifecycle.Append(fx.Hook{
-			OnStart: func(context.Context) error {
-				logger.Info("Starting cli Application")
-				logger.Info("------- (CLI) ------")
-				go cliApp.Start()
-				return nil
+		lifecycle.Append(
+			fx.Hook{
+				OnStart: func(context.Context) error {
+					logger.Info("Starting cli Application")
+					logger.Info("------- (CLI) ------")
+					go cliApp.Start()
+					return nil
+				},
+				OnStop: appStop,
 			},
-			OnStop: appStop,
-		})
+		)
 
 		return
 	}
 
-	lifecycle.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			logger.Info("Starting Application")
-			logger.Info("------------------------")
-			logger.Info("------ Gin Skeleton 📺 ------")
-			logger.Info("------------------------")
+	lifecycle.Append(
+		fx.Hook{
+			OnStart: func(context.Context) error {
+				logger.Info("Starting Application")
+				logger.Info("------------------------")
+				logger.Info("------ Gin Skeleton 📺 ------")
+				logger.Info("------------------------")
 
-			go func() {
-				if env.Environment != "production" && env.HOST != "" {
-					logger.Info("Setting Swagger Host...")
-					docs.SwaggerInfo.Host = env.HOST
-				}
+				go func() {
+					if env.Environment != "production" && env.HOST != "" {
+						logger.Info("Setting Swagger Host...")
+						docs.SwaggerInfo.Host = env.HOST
+					}
 
-				if env.Environment == "development" || env.Environment == "production" {
-					logger.Info("Migrating DB schema...")
-					migrations.MigrateUp()
-				}
-				if env.ServerPort == "" {
-					_ = handler.Run()
-				} else {
-					_ = handler.Run(":" + env.ServerPort)
-				}
-			}()
-			return nil
+					if database.ConnectionError != nil {
+						logger.Error(*database.ConnectionError)
+					}
+
+					if env.Environment == "development" || env.Environment == "production" {
+						logger.Info("Migrating DB schema...")
+						migrations.MigrateUp()
+					}
+					if env.ServerPort == "" {
+						_ = handler.Run()
+					} else {
+						_ = handler.Run(":" + env.ServerPort)
+					}
+				}()
+				return nil
+			},
+			OnStop: appStop,
 		},
-		OnStop: appStop,
-	})
+	)
 }

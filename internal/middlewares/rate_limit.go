@@ -1,10 +1,11 @@
 package middlewares
 
 import (
-	"boilerplate-api/internal/json_response"
 	"net/http"
 	"strconv"
 	"time"
+
+	"boilerplate-api/internal/json_response"
 
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/constants"
@@ -72,10 +73,12 @@ func (rl RateLimitMiddleware) HandleRateLimit(limit int64, period time.Duration)
 
 		// Limit exceeded
 		if context.Reached {
-			c.JSON(http.StatusTooManyRequests, json_response.Error[string]{
-				Error:   "Too many request",
-				Message: "Rate limit has exceeded",
-			})
+			c.JSON(
+				http.StatusTooManyRequests, json_response.Error[string]{
+					Error:   "Too many request",
+					Message: "Rate limit has exceeded",
+				},
+			)
 			c.Abort()
 			return
 		}

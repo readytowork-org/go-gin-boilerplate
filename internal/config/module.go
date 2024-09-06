@@ -1,9 +1,10 @@
 package config
 
 import (
-	"go.uber.org/fx"
 	"log"
 	"strings"
+
+	"go.uber.org/fx"
 )
 
 // ENVModule config dependency
@@ -27,10 +28,12 @@ var Module = fx.Options(
 )
 
 // TestENVModule required for test env
-var TestENVModule = fx.Module("ENV", fx.Options(
-	ENVModule,
-	fx.Invoke(validateTestEnv),
-))
+var TestENVModule = fx.Module(
+	"ENV", fx.Options(
+		ENVModule,
+		fx.Invoke(validateTestEnv),
+	),
+)
 
 func validateTestEnv(envPath EnvPath, env Env) {
 	if !strings.Contains(envPath.ToString(), "test") {

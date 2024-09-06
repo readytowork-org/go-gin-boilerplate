@@ -1,6 +1,9 @@
 package utility
 
 import (
+	"context"
+	"image"
+	"mime/multipart"
 	"net/http"
 	"path/filepath"
 
@@ -8,21 +11,25 @@ import (
 	"boilerplate-api/internal/json_response"
 	"boilerplate-api/internal/utils"
 	"boilerplate-api/services/aws"
-	"boilerplate-api/services/gcp"
-
 	"github.com/gin-gonic/gin"
 )
+
+type GcpStorageBucketService interface {
+	UploadFile(ctx context.Context, file multipart.File, fileName string) (string, error)
+	UploadThumbnailFile(ctx context.Context, image image.Image, fileName string, fileExtension string) (string, error)
+}
 
 type Controller struct {
 	logger   config.Logger
 	env      config.Env
-	bucket   gcp.StorageBucketService
+	bucket   GcpStorageBucketService
 	s3Bucket aws.S3BucketService
 }
 
-func NewController(logger config.Logger,
+func NewController(
+	logger config.Logger,
 	env config.Env,
-	bucket gcp.StorageBucketService,
+	bucket GcpStorageBucketService,
 	s3Bucket aws.S3BucketService,
 ) Controller {
 	return Controller{
@@ -49,10 +56,12 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 	file, uploadFile, err := ctx.Request.FormFile("file")
 	if err != nil {
 		uc.logger.Error("Error Get File from request :: ", err.Error())
-		ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to get file from request",
-		})
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to get file from request",
+			},
+		)
 		return
 	}
 
@@ -66,10 +75,12 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 	fileHeader := make([]byte, 512)
 	if _, err := file1.Read(fileHeader); err != nil {
 		uc.logger.Error("Error File Read upload File::", err.Error())
-		ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to read File",
-		})
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to read File",
+			},
+		)
 		return
 	}
 	fileType := http.DetectContentType(fileHeader)
@@ -77,10 +88,12 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 		uploadedOriginalURL, err := uc.bucket.UploadFile(ctx.Request.Context(), file, originalFileName)
 		if err != nil {
 			uc.logger.Error("Error Failed to upload File::", err.Error())
-			ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-				Error:   err.Error(),
-				Message: "Failed to upload File",
-			})
+			ctx.JSON(
+				http.StatusBadRequest, json_response.Error[string]{
+					Error:   err.Error(),
+					Message: "Failed to upload File",
+				},
+			)
 			return
 		}
 
@@ -88,19 +101,25 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 		thumbnail, err := utils.CreateThumbnail(file, fileType, 200, 0)
 		if err != nil {
 			uc.logger.Error("Error Failed create thumbnail", err.Error())
-			ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-				Error:   err.Error(),
-				Message: "Failed to create thumbnail",
-			})
+			ctx.JSON(
+				http.StatusBadRequest, json_response.Error[string]{
+					Error:   err.Error(),
+					Message: "Failed to create thumbnail",
+				},
+			)
 			return
 		}
-		uploadThumbnailUrl, err := uc.bucket.UploadThumbnailFile(ctx.Request.Context(), thumbnail, thumbnailFileName, fileExtension)
+		uploadThumbnailUrl, err := uc.bucket.UploadThumbnailFile(
+			ctx.Request.Context(), thumbnail, thumbnailFileName, fileExtension,
+		)
 		if err != nil {
 			uc.logger.Error("Error Failed to upload File::", err.Error())
-			ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-				Error:   err.Error(),
-				Message: "Failed to upload thumbnail File",
-			})
+			ctx.JSON(
+				http.StatusBadRequest, json_response.Error[string]{
+					Error:   err.Error(),
+					Message: "Failed to upload thumbnail File",
+				},
+			)
 			return
 		}
 
@@ -114,7 +133,8 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 				"original_image_path":  uploadedOriginalURL,
 				"thumbnail_image_url":  storageURL + uc.env.StorageBucketName + "/" + uploadThumbnailUrl,
 				"thumbnail_image_path": uploadThumbnailUrl,
-			}}
+			},
+		}
 		ctx.JSON(http.StatusOK, response)
 		return
 	}
@@ -123,10 +143,12 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 	uploadedFileURL, err := uc.bucket.UploadFile(ctx.Request.Context(), file, originalFileName)
 	if err != nil {
 		uc.logger.Error("Error Failed to upload File::", err.Error())
-		ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to upload File",
-		})
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to upload File",
+			},
+		)
 		return
 	}
 	response := &Response{
@@ -148,20 +170,24 @@ func (uc Controller) FileUploadS3Handler(ctx *gin.Context) {
 	file, fileHeader, err := ctx.Request.FormFile("file")
 	if err != nil {
 		uc.logger.Error("Error Get File from request: ", err.Error())
-		ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to get file from request",
-		})
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to get file from request",
+			},
+		)
 		return
 	}
 	var input Input
 	err = ctx.ShouldBind(&input)
 	if err != nil {
 		uc.logger.Error("Error Failed to bind input:: ", err.Error())
-		ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to bind",
-		})
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to bind",
+			},
+		)
 		return
 	}
 
@@ -172,10 +198,12 @@ func (uc Controller) FileUploadS3Handler(ctx *gin.Context) {
 	uploadedFileURL, err := uc.s3Bucket.UploadToS3(file, fileHeader, originalFileNamePath)
 	if err != nil {
 		uc.logger.Error("Error Failed to upload File:: ", err.Error())
-		ctx.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to upload file to s3 bucket",
-		})
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to upload file to s3 bucket",
+			},
+		)
 		return
 	}
 

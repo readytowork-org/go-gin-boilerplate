@@ -5,55 +5,52 @@ import (
 
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/constants"
-	"boilerplate-api/services/firebase"
+	"boilerplate-api/services"
 )
 
 // AdminSeed  Admin seeding
 type AdminSeed struct {
 	Seed
 	logger          config.Logger
-	firebaseService firebase.AuthService
-	env             config.Env
+	firebaseService services.IFirebaseAuthService
+	adminEmail      string
+	adminPass       string
+	adminName       string
 }
 
 // NewAdminSeed creates admin seed
 func NewAdminSeed(
 	logger config.Logger,
-	authService firebase.AuthService,
-	env config.Env,
+	authService services.IFirebaseAuthService,
+	adminEmail string,
+	adminPass string,
+	adminName string,
 ) AdminSeed {
 	return AdminSeed{
 		logger:          logger,
 		firebaseService: authService,
-		env:             env,
+		adminEmail:      adminEmail,
+		adminPass:       adminPass,
+		adminName:       adminName,
 	}
 }
 
 // Run the seed data
 func (c AdminSeed) Run() {
-	email := c.env.AdminEmail
-	password := c.env.AdminPass
-	name := c.env.AdminName
-
 	c.logger.Info("🌱 seeding admin data...")
 
-	_, err := c.firebaseService.GetUserByEmail(context.Background(), email)
-
+	_, err := c.firebaseService.GetUserByEmail(context.Background(), c.adminEmail)
 	if err != nil {
-		firebaseAuthUser := firebase.AuthUser{
-			Password:    password,
-			Email:       email,
-			Role:        string(constants.Roles.SuperAdmin),
-			DisplayName: &name,
-		}
-
-		_, errResponse := c.firebaseService.CreateUser(firebaseAuthUser)
-		if err != nil {
+		_, errResponse := c.firebaseService.CreateUser(
+			c.adminName, c.adminEmail, c.adminPass,
+			string(constants.Roles.SuperAdmin),
+		)
+		if errResponse != nil {
 			c.logger.Error("Firebase Admin user can't be created: ", errResponse.Message)
 			return
 		}
 
-		c.logger.Info("Firebase Admin UserName Created, email: ", email, " password: ", password)
+		c.logger.Info("Firebase Admin UserName Created, email: ", c.adminEmail, " password: ", c.adminPass)
 	}
 
 	c.logger.Info("Admin already exist")

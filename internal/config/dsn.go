@@ -5,6 +5,19 @@ import (
 	"time"
 )
 
+type (
+	DBType string
+)
+
+func (r DBType) ToString() string {
+	return string(r)
+}
+
+const (
+	DBTypeSql      DBType = "mysql"
+	DBTypePostgres DBType = "postgres"
+)
+
 type DSNConfig struct {
 	UserName     string         // Username
 	Password     string         // Password (requires UserName)
@@ -13,6 +26,7 @@ type DSNConfig struct {
 	Address      string         // Network address (requires Net)
 	ParseTime    bool           // Parse time values to time.Time
 	TimeLocation *time.Location // Location for time.Time values
+	DBType       DBType
 }
 
 func NewDSNConfig(env Env) DSNConfig {
@@ -33,5 +47,6 @@ func NewDSNConfig(env Env) DSNConfig {
 		DBName:       env.DBName,
 		ParseTime:    true,
 		TimeLocation: location,
+		DBType:       DBType(env.DBType),
 	}
 }

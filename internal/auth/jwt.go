@@ -10,8 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// FIXME :: refactor
-
 type JWTClaims struct {
 	jwt.RegisteredClaims
 	// ...other claims
@@ -55,9 +53,11 @@ func (m JWTAuthService) GetTokenFromHeader(header string) (string, *api_errors.E
 
 func (m JWTAuthService) ParseAndVerifyToken(tokenString, secret string) (*jwt.Token, *api_errors.ErrorResponse) {
 	// Parse the token using the secret key
-	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
+	token, err := jwt.ParseWithClaims(
+		tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(secret), nil
+		},
+	)
 	if err != nil {
 		if !strings.Contains(err.Error(), "expired") {
 			err := api_errors.ErrorResponse{
@@ -71,7 +71,6 @@ func (m JWTAuthService) ParseAndVerifyToken(tokenString, secret string) (*jwt.To
 		}
 	}
 	return token, nil
-
 }
 
 func (m JWTAuthService) RetrieveClaims(token *jwt.Token) (*JWTClaims, *api_errors.ErrorResponse) {
@@ -85,7 +84,6 @@ func (m JWTAuthService) RetrieveClaims(token *jwt.Token) (*JWTClaims, *api_error
 		return nil, &err
 	}
 	return claims, nil
-
 }
 
 func (m JWTAuthService) GenerateToken(claims JWTClaims, secret string) (string, error) {
