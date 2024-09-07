@@ -6,12 +6,12 @@ import (
 	"boilerplate-api/api"
 	"boilerplate-api/cli"
 	"boilerplate-api/database/seeds"
-	"boilerplate-api/docs"
 	"boilerplate-api/internal"
 	"boilerplate-api/internal/config"
 	"boilerplate-api/internal/router"
 	"boilerplate-api/internal/utils"
 	"boilerplate-api/services"
+	"boilerplate-api/swagger"
 	"go.uber.org/fx"
 )
 
@@ -70,7 +70,7 @@ func bootstrap(
 				go func() {
 					if env.Environment != "production" && env.HOST != "" {
 						logger.Info("Setting Swagger Host...")
-						docs.SwaggerInfo.Host = env.HOST
+						swagger.SwaggerInfo.Host = env.HOST
 					}
 
 					if database.ConnectionError != nil {

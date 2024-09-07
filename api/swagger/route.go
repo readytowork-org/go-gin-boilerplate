@@ -1,4 +1,4 @@
-package docs
+package swagger
 
 import (
 	"boilerplate-api/internal/config"
@@ -14,7 +14,7 @@ func SetupRoutes(
 ) {
 	if env.Environment != "production" {
 		logger.Info(" Setting up Docs routes")
-		swagger := router.Group("/docs")
+		swagger := router.Group("/swagger")
 		{
 			swagger.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}

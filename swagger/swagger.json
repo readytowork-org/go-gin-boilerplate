@@ -28,7 +28,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/Data-user_GetUserResponse"
+                            "$ref": "#/definitions/Data-user_CUser"
                         }
                     },
                     "500": {
@@ -111,7 +111,7 @@
                 "tags": [
                     "UserManagementApi"
                 ],
-                "summary": "Create User",
+                "summary": "Create CreateUser",
                 "operationId": "CreateUser",
                 "parameters": [
                     {
@@ -126,7 +126,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Created Successfully",
+                        "description": "CUser Created Successfully",
                         "schema": {
                             "$ref": "#/definitions/Message"
                         }
@@ -166,7 +166,7 @@
                 "tags": [
                     "UserManagementApi"
                 ],
-                "summary": "User Profile",
+                "summary": "CreateUser Profile",
                 "operationId": "GetOneUser",
                 "responses": {
                     "200": {
@@ -214,6 +214,17 @@
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "Data-user_CUser": {
+            "type": "object",
+            "required": [
+                "data"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/user.CUser"
                 }
             }
         },
@@ -280,15 +291,42 @@
                 }
             }
         },
+        "user.CUser": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "user.CreateUserRequestData": {
             "type": "object",
             "required": [
-                "confirm_password",
-                "email",
-                "full_name",
-                "gender",
-                "password",
-                "phone"
+                "confirm_password"
             ],
             "properties": {
                 "confirm_password": {
@@ -298,12 +336,7 @@
                     "type": "string"
                 },
                 "deleted_at": {
-                    "description": "add soft delete in gorm",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/gorm.DeletedAt"
-                        }
-                    ]
+                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "email": {
                     "type": "string"
@@ -330,24 +363,12 @@
         },
         "user.GetUserResponse": {
             "type": "object",
-            "required": [
-                "email",
-                "full_name",
-                "gender",
-                "password",
-                "phone"
-            ],
             "properties": {
                 "created_at": {
                     "type": "string"
                 },
                 "deleted_at": {
-                    "description": "add soft delete in gorm",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/gorm.DeletedAt"
-                        }
-                    ]
+                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "email": {
                     "type": "string"

@@ -19,6 +19,13 @@ definitions:
     required:
     - message
     type: object
+  Data-user_CUser:
+    properties:
+      data:
+        $ref: '#/definitions/user.CUser'
+    required:
+    - data
+    type: object
   Data-user_GetUserResponse:
     properties:
       data:
@@ -60,6 +67,27 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  user.CUser:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      full_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
   user.CreateUserRequestData:
     properties:
       confirm_password:
@@ -67,9 +95,7 @@ definitions:
       created_at:
         type: string
       deleted_at:
-        allOf:
-        - $ref: '#/definitions/gorm.DeletedAt'
-        description: add soft delete in gorm
+        $ref: '#/definitions/gorm.DeletedAt'
       email:
         type: string
       full_name:
@@ -86,20 +112,13 @@ definitions:
         type: string
     required:
     - confirm_password
-    - email
-    - full_name
-    - gender
-    - password
-    - phone
     type: object
   user.GetUserResponse:
     properties:
       created_at:
         type: string
       deleted_at:
-        allOf:
-        - $ref: '#/definitions/gorm.DeletedAt'
-        description: add soft delete in gorm
+        $ref: '#/definitions/gorm.DeletedAt'
       email:
         type: string
       full_name:
@@ -114,12 +133,6 @@ definitions:
         type: string
       updated_at:
         type: string
-    required:
-    - email
-    - full_name
-    - gender
-    - password
-    - phone
     type: object
 host: localhost:8000
 info:
@@ -145,7 +158,7 @@ paths:
             $ref: '#/definitions/ApiError-string'
       security:
       - Bearer: []
-      summary: User Profile
+      summary: CreateUser Profile
       tags:
       - UserManagementApi
   /api/v1/profile:
@@ -158,7 +171,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Data-user_GetUserResponse'
+            $ref: '#/definitions/Data-user_CUser'
         "500":
           description: Internal Server Error
           schema:
@@ -218,7 +231,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: User Created Successfully
+          description: CUser Created Successfully
           schema:
             $ref: '#/definitions/Message'
         "400":
@@ -235,7 +248,7 @@ paths:
             $ref: '#/definitions/ApiError-string'
       security:
       - Bearer: []
-      summary: Create User
+      summary: Create CreateUser
       tags:
       - UserManagementApi
 securityDefinitions:

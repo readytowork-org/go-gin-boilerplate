@@ -2,16 +2,22 @@
 
 > **Go Gin Skeleton template includes all the common packages and setup used for API development using [gin](https://gin-gonic.com).**
 
-## Implemented Feature
-
+## Configured With
 - Dependency Injection: [fx](https://github.com/uber-go/fx)
 - Routing: [gin web framework](https://gin-gonic.com)
 - Logging: [zap](https://github.com/uber-go/zap)
-- Database (mysql)
+- Database: ([mysql](https://gorm.io/driver/mysql) / [sqlmock](https://github.com/DATA-DOG/go-sqlmock))
 - ORM: [gorm](https://gorm.io/docs)
-- Middlewares (cors)
-- Rate Limiting Middleware
-- Transaction Middleware
+- API documentation: [gin-swagger](https://github.com/swaggo/gin-swagger)
+- Middlewares
+  - CORS
+  - Rate Limit
+  - DB Transaction
+- CLI tools
+  - migrate: for DB migrations
+  - gentool: to generate dao objects from database
+  - swag: to generate swagger docs
+  - gin: hot-reload
 
 **For Debugging 🐞** Debugger runs at `5002`. Vs code configuration is at `.vscode/launch.json` which will attach debugger to remote application.
 
@@ -23,6 +29,7 @@
 - #### Running using Gin Watch
   - run `make dev`
 
+[//]: # (TODO :: Need a proper name ⬇️)
 ## External Services
 > Run `go get <package name>` to install.
 
