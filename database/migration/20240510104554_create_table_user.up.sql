@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS `users`
 (
     `id`         INT UNSIGNED AUTO_INCREMENT NOT NULL,
-    `full_name`  VARCHAR(45)                 NULL,
-    `phone`      VARCHAR(15)                 NULL,
-    `gender`     VARCHAR(15)                 NULL,
+    `full_name`  VARCHAR(45)                 NOT NULL,
+    `phone`      VARCHAR(15)                 NOT NULL,
+    `gender`     VARCHAR(15)                 NOT NULL,
     `email`      VARCHAR(100)                NOT NULL,
     `password`   VARCHAR(100)                NOT NULL,
     `created_at` DATETIME                    NOT NULL,

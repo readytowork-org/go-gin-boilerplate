@@ -2,14 +2,15 @@ package api
 
 import (
 	"boilerplate-api/api/admin"
-	"boilerplate-api/api/docs"
+	"boilerplate-api/api/swagger"
 	"boilerplate-api/api/user"
 	"go.uber.org/fx"
 )
 
-var Module = fx.Module("api",
+var Module = fx.Module(
+	"api",
 	fx.Options(
-		docs.Module,
+		swagger.Module,
 		admin.Module,
 		user.Module,
 	),

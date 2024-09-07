@@ -1,7 +1,7 @@
 package user
 
 import (
-	"boilerplate-api/database/models"
+	"boilerplate-api/api/user/user"
 	"gorm.io/gorm"
 )
 
@@ -22,13 +22,13 @@ func (c Service) WithTrx(trxHandle *gorm.DB) Service {
 	return c
 }
 
-// CreateUser to create the User
-func (c Service) CreateUser(user models.User) error {
+// CreateUser to create the CreateUser
+func (c Service) CreateUser(user user.CUser) error {
 	err := c.repository.Create(user)
 	return err
 }
 
-// GetAllUsers to get all the User
+// GetAllUsers to get all the CreateUser
 func (c Service) GetAllUsers(pagination Pagination) ([]GetUserResponse, int64, error) {
 	return c.repository.GetAllUsers(pagination)
 }
@@ -39,11 +39,11 @@ func (c Service) GetOneUser(Id int64) (GetUserResponse, error) {
 }
 
 // GetOneUserWithEmail Get one user with email
-func (c Service) GetOneUserWithEmail(Email string) (models.User, error) {
+func (c Service) GetOneUserWithEmail(Email string) (user.CUser, error) {
 	return c.repository.GetOneUserWithEmail(Email)
 }
 
 // GetOneUserWithPhone Get one user with phone
-func (c Service) GetOneUserWithPhone(Phone string) (models.User, error) {
+func (c Service) GetOneUserWithPhone(Phone string) (user.CUser, error) {
 	return c.repository.GetOneUserWithPhone(Phone)
 }

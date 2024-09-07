@@ -49,7 +49,7 @@ func NewDatabase(logger Logger, dsnConfig DSNConfig) *Database {
 			},
 		)
 		dialector = &_dialector
-
+		mysqlDSNConfig.DBName = dsnConfig.DBName
 		database.dsn = mysqlDSNConfig.FormatDSN()
 		break
 	}

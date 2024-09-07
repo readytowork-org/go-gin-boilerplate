@@ -43,7 +43,7 @@ create:
 
 dao:
 		@command -v gentool >/dev/null 2>&1 || (echo "Installing gentool..." && go install gorm.io/gen/tools/gentool@latest)
-		gentool -dsn ${DB_DSN} -fieldNullable -fieldWithIndexTag -fieldSignable -onlyModel -outPath "./database/dao" -modelPkgName "dao"
+		gentool -dsn ${DB_DSN} -fieldNullable -fieldWithIndexTag -fieldWithTypeTag -fieldSignable -onlyModel -outPath "./database/dao" -modelPkgName "dao"
 
 swagger:
 		@command -v swag >/dev/null 2>&1 || (echo "Installing swag..." && go install github.com/swaggo/swag/cmd/swag@latest)

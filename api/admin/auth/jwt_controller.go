@@ -52,30 +52,36 @@ func (cc JwtAuthController) LoginUserWithJWT(c *gin.Context) {
 	// Bind the request payload to a reqData struct
 	if err := c.ShouldBindJSON(&reqData); err != nil {
 		cc.logger.Error("Error [ShouldBindJSON] : ", err.Error())
-		c.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   err.Error(),
-			Message: "Failed to bind request data",
-		})
+		c.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   err.Error(),
+				Message: "Failed to bind request data",
+			},
+		)
 		return
 	}
 
 	// validating using custom validator
 	if validationErr := cc.validator.Struct(reqData); validationErr != nil {
 		cc.logger.Error("[Validate Struct] Validation error: ", validationErr.Error())
-		c.JSON(http.StatusUnprocessableEntity, json_response.Error[[]api_errors.ValidationError]{
-			Message: "Invalid input information",
-			Error:   cc.validator.GenerateValidationResponse(validationErr),
-		})
+		c.JSON(
+			http.StatusUnprocessableEntity, json_response.Error[[]api_errors.ValidationError]{
+				Message: "Invalid input information",
+				Error:   cc.validator.GenerateValidationResponse(validationErr),
+			},
+		)
 		return
 	}
 
 	// Check if the user exists with provided email address
 	userData, err := cc.userService.GetOneUserWithEmail(reqData.Email)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   "Failed to Login",
-			Message: "Invalid user credentials",
-		})
+		c.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   "Failed to Login",
+				Message: "Invalid user credentials",
+			},
+		)
 		return
 	}
 
@@ -84,10 +90,12 @@ func (cc JwtAuthController) LoginUserWithJWT(c *gin.Context) {
 	isValidPassword := utils.CompareHashAndPlainPassword(userData.Password, reqData.Password)
 	if !isValidPassword {
 		cc.logger.Error("[CompareHashAndPassword] hash and plain password does not match")
-		c.JSON(http.StatusBadRequest, json_response.Error[string]{
-			Error:   "Failed to Login",
-			Message: "Invalid user credentials",
-		})
+		c.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Error:   "Failed to Login",
+				Message: "Invalid user credentials",
+			},
+		)
 		return
 	}
 
@@ -104,10 +112,12 @@ func (cc JwtAuthController) LoginUserWithJWT(c *gin.Context) {
 	accessToken, tokenErr := cc.jwtService.GenerateToken(accessClaims, cc.env.JwtAccessSecret)
 	if tokenErr != nil {
 		cc.logger.Error("[SignedString] Error getting token: ", tokenErr.Error())
-		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
-			Error:   tokenErr.Error(),
-			Message: "Failed to Login",
-		})
+		c.JSON(
+			http.StatusInternalServerError, json_response.Error[string]{
+				Error:   tokenErr.Error(),
+				Message: "Failed to Login",
+			},
+		)
 		return
 	}
 
@@ -123,15 +133,17 @@ func (cc JwtAuthController) LoginUserWithJWT(c *gin.Context) {
 	refreshToken, refreshTokenErr := cc.jwtService.GenerateToken(refreshClaims, cc.env.JwtRefreshSecret)
 	if refreshTokenErr != nil {
 		cc.logger.Error("[SignedString] Error getting token: ", refreshTokenErr.Error())
-		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
-			Error:   refreshTokenErr.Error(),
-			Message: "Failed to Login",
-		})
+		c.JSON(
+			http.StatusInternalServerError, json_response.Error[string]{
+				Error:   refreshTokenErr.Error(),
+				Message: "Failed to Login",
+			},
+		)
 		return
 	}
 
 	data := types.MapString{
-		"user":          userData.ToMap(),
+		"user":          userData,
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	}
@@ -146,30 +158,36 @@ func (cc JwtAuthController) RefreshJwtToken(c *gin.Context) {
 	tokenString, err := cc.jwtService.GetTokenFromHeader(header)
 	if err != nil {
 		cc.logger.Error("Error getting token from header: ", err.Message)
-		c.JSON(http.StatusUnauthorized, json_response.Error[string]{
-			Error:   err.Message,
-			Message: "Something went wrong",
-		})
+		c.JSON(
+			http.StatusUnauthorized, json_response.Error[string]{
+				Error:   err.Message,
+				Message: "Something went wrong",
+			},
+		)
 		return
 	}
 
 	parsedToken, parseErr := cc.jwtService.ParseAndVerifyToken(tokenString, cc.env.JwtRefreshSecret)
 	if parseErr != nil {
 		cc.logger.Error("Error parsing token: ", parseErr.Message)
-		c.JSON(http.StatusUnauthorized, json_response.Error[string]{
-			Error:   parseErr.Message,
-			Message: "Something went wrong",
-		})
+		c.JSON(
+			http.StatusUnauthorized, json_response.Error[string]{
+				Error:   parseErr.Message,
+				Message: "Something went wrong",
+			},
+		)
 		return
 	}
 
 	claims, verifyErr := cc.jwtService.RetrieveClaims(parsedToken)
 	if verifyErr != nil {
 		cc.logger.Error("Error verifying token: ", verifyErr.Message)
-		c.JSON(http.StatusUnauthorized, json_response.Error[string]{
-			Error:   verifyErr.Message,
-			Message: "Something went wrong",
-		})
+		c.JSON(
+			http.StatusUnauthorized, json_response.Error[string]{
+				Error:   verifyErr.Message,
+				Message: "Something went wrong",
+			},
+		)
 		return
 	}
 
@@ -186,9 +204,11 @@ func (cc JwtAuthController) RefreshJwtToken(c *gin.Context) {
 	accessToken, tokenErr := cc.jwtService.GenerateToken(accessClaims, cc.env.JwtAccessSecret)
 	if tokenErr != nil {
 		cc.logger.Error("[SignedString] Error getting token: ", tokenErr.Error())
-		c.JSON(http.StatusInternalServerError, json_response.Error[string]{
-			Message: tokenErr.Error(),
-		})
+		c.JSON(
+			http.StatusInternalServerError, json_response.Error[string]{
+				Message: tokenErr.Error(),
+			},
+		)
 		return
 	}
 

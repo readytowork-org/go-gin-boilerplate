@@ -1,7 +1,7 @@
 package user
 
 import (
-	"boilerplate-api/database/models"
+	"boilerplate-api/api/user/user"
 	"boilerplate-api/internal/config"
 	"gorm.io/gorm"
 )
@@ -12,7 +12,7 @@ type Repository struct {
 	logger config.Logger
 }
 
-// NewRepository creates a new User repository
+// NewRepository creates a new CUser repository
 func NewRepository(db *config.Database, logger config.Logger) Repository {
 	return Repository{
 		db:     db,
@@ -31,14 +31,14 @@ func (c Repository) WithTrx(trxHandle *gorm.DB) Repository {
 }
 
 // Create user
-func (c Repository) Create(User models.User) error {
+func (c Repository) Create(User user.CUser) error {
 	return c.db.DB.Create(&User).Error
 }
 
 // GetAllUsers Get All users
 func (c Repository) GetAllUsers(pagination Pagination) (users []GetUserResponse, count int64, err error) {
 	queryBuilder := c.db.DB.Limit(pagination.PageSize).Offset(pagination.Offset).Order("created_at desc")
-	queryBuilder = queryBuilder.Model(&models.User{})
+	queryBuilder = queryBuilder.Model(&user.CUser{})
 
 	if pagination.Keyword != "" {
 		searchQuery := "%" + pagination.Keyword + "%"
@@ -61,14 +61,14 @@ func (c Repository) GetOneUser(Id int64) (userModel GetUserResponse, err error) 
 		Error
 }
 
-func (c Repository) GetOneUserWithEmail(Email string) (user models.User, err error) {
+func (c Repository) GetOneUserWithEmail(Email string) (user user.CUser, err error) {
 	return user, c.db.DB.Model(&user).
 		Where("email = ?", Email).
 		First(&user).
 		Error
 }
 
-func (c Repository) GetOneUserWithPhone(Phone string) (user models.User, err error) {
+func (c Repository) GetOneUserWithPhone(Phone string) (user user.CUser, err error) {
 	return user, c.db.DB.
 		First(&user, "phone = ?", Phone).
 		Error

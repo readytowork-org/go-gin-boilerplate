@@ -1,7 +1,6 @@
 package user
 
 import (
-	"boilerplate-api/database/models"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +22,6 @@ func (c Service) WithTrx(trxHandle *gorm.DB) Service {
 }
 
 // GetOneUser one user
-func (c Service) GetOneUser(Id string) (models.User, error) {
+func (c Service) GetOneUser(Id string) (CUser, error) {
 	return c.repository.GetOneUser(Id)
 }

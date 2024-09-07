@@ -1,7 +1,6 @@
 package user
 
 import (
-	"boilerplate-api/database/models"
 	"boilerplate-api/internal/config"
 	"gorm.io/gorm"
 )
@@ -12,7 +11,7 @@ type Repository struct {
 	logger config.Logger
 }
 
-// NewRepository creates a new User repository
+// NewRepository creates a new CUser repository
 func NewRepository(db *config.Database, logger config.Logger) Repository {
 	return Repository{
 		db:     db,
@@ -30,7 +29,7 @@ func (c Repository) WithTrx(trxHandle *gorm.DB) Repository {
 	return c
 }
 
-func (c Repository) GetOneUser(Id string) (userModel models.User, err error) {
+func (c Repository) GetOneUser(Id string) (userModel CUser, err error) {
 	return userModel, c.db.DB.
 		Model(&userModel).
 		Where("id = ?", Id).
