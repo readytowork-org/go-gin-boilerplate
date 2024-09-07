@@ -47,7 +47,6 @@ func GetLogger() Logger {
 
 // newLogger sets up logger the main logger
 func newLogger() *Logger {
-
 	environment := os.Getenv("ENVIRONMENT")
 	logLevel := os.Getenv("LOG_LEVEL")
 
@@ -116,38 +115,44 @@ func (l *Logger) GetFxLogger() fxevent.Logger {
 func (l *FxLogger) LogEvent(event fxevent.Event) {
 	switch e := event.(type) {
 	case *fxevent.OnStartExecuting:
-		l.Logger.Debug("OnStart hook executing: ",
+		l.Logger.Debug(
+			"OnStart hook executing: ",
 			zap.String("callee", e.FunctionName),
 			zap.String("caller", e.CallerName),
 		)
 	case *fxevent.OnStartExecuted:
 		if e.Err != nil {
-			l.Logger.Debug("OnStart hook failed: ",
+			l.Logger.Debug(
+				"OnStart hook failed: ",
 				zap.String("callee", e.FunctionName),
 				zap.String("caller", e.CallerName),
 				zap.Error(e.Err),
 			)
 		} else {
-			l.Logger.Debug("OnStart hook executed: ",
+			l.Logger.Debug(
+				"OnStart hook executed: ",
 				zap.String("callee", e.FunctionName),
 				zap.String("caller", e.CallerName),
 				zap.String("runtime", e.Runtime.String()),
 			)
 		}
 	case *fxevent.OnStopExecuting:
-		l.Logger.Debug("OnStop hook executing: ",
+		l.Logger.Debug(
+			"OnStop hook executing: ",
 			zap.String("callee", e.FunctionName),
 			zap.String("caller", e.CallerName),
 		)
 	case *fxevent.OnStopExecuted:
 		if e.Err != nil {
-			l.Logger.Debug("OnStop hook failed: ",
+			l.Logger.Debug(
+				"OnStop hook failed: ",
 				zap.String("callee", e.FunctionName),
 				zap.String("caller", e.CallerName),
 				zap.Error(e.Err),
 			)
 		} else {
-			l.Logger.Debug("OnStop hook executed: ",
+			l.Logger.Debug(
+				"OnStop hook executed: ",
 				zap.String("callee", e.FunctionName),
 				zap.String("caller", e.CallerName),
 				zap.String("runtime", e.Runtime.String()),
@@ -161,7 +166,8 @@ func (l *FxLogger) LogEvent(event fxevent.Event) {
 		}
 	case *fxevent.Decorated:
 		for _, rtype := range e.OutputTypeNames {
-			l.Logger.Debug("decorated: ",
+			l.Logger.Debug(
+				"decorated: ",
 				zap.String("decorator", e.DecoratorName),
 				zap.String("type", rtype),
 			)

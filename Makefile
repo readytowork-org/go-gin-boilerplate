@@ -6,40 +6,19 @@ MIGRATE_LOCAL=migrate -path=database/migration -database ${DB_TYPE}"://"${DB_DSN
 
 MIGRATE=docker-compose exec web ${MIGRATE_LOCAL}
 
-migrate-up:
-		@echo "running migration in: ${DB_NAME}"
-		@if [ "$(env)" = "local" ]; then $(MIGRATE_LOCAL) up; else $(MIGRATE) up; fi
-
-migrate-down:
-		@echo "running migration in: ${DB_NAME}"
-		@if [ "$(env)" = "local" ]; then $(MIGRATE_LOCAL) down; else $(MIGRATE) down; fi
-
-force:
-		@read -p "Which version do you want to force?" VERSION; \
-		if [ "$(env)" = "local" ]; then \
-		 $(MIGRATE_LOCAL) force $$VERSION; \
-		else \
-			$(MIGRATE) force $$VERSION; \
-		fi
-
-goto:
-		@read -p  "Which version do you want to migrate?" VERSION; \
-		if [ "$(env)" = "local" ]; then \
-		  	$(MIGRATE_LOCAL) goto $$VERSION; \
-		else \
-		    $(MIGRATE) goto $$VERSION; \
-		fi
-
-drop:
-		@if [ "$(env)" = "local" ]; then $(MIGRATE_LOCAL) drop; else $(MIGRATE) drop; fi
-
-create:
-		@read -p  "What is the name of migration?" NAME; \
-		if [ "$(env)" = "local" ]; then \
-			$(MIGRATE_LOCAL) create -ext sql -dir database/migration $$NAME; \
-		else \
-			$(MIGRATE) create -ext sql -dir database/migration $$NAME; \
-		fi
+migrate:
+         ifeq (migrate,$(firstword $(MAKECMDGOALS)))
+           RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+           # ...and turn them into do-nothing targets
+           $(eval $(RUN_ARGS):;@:)
+         endif
+         ifeq (create,$(firstword $(RUN_ARGS)))
+           ARGS := $(wordlist 2,$(words $(RUN_ARGS)),$(RUN_ARGS))
+           RUN_ARGS=create -ext sql -dir database/migration $(ARGS)
+         endif
+migrate:
+		@echo "using database: ${DB_NAME}"
+		@if [ "$(env)" = "local" ]; then $(MIGRATE_LOCAL) $(RUN_ARGS); else $(MIGRATE) $(RUN_ARGS); fi
 
 dao:
 		@command -v gentool >/dev/null 2>&1 || (echo "Installing gentool..." && go install gorm.io/gen/tools/gentool@latest)
@@ -57,11 +36,9 @@ lint-install:
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.54.2
 		git config core.hooksPath hooks
 
-start: lint-install
-		docker-compose up
-
-start-dev:
-		bash automate/scripts/gin-watch.sh ${SERVER_PORT}
+run:
+		@command -v gin >/dev/null 2>&1 || (go install github.com/codegangsta/gin@latest);
+		gin -a $(SERVER_PORT) -i -p $$(($(SERVER_PORT) + 1)) run .
 
 test-repo: TEST_NAME=$(filter-out $@,$(MAKECMDGOALS))
 test-repo:
@@ -75,5 +52,5 @@ test-controller: TEST_NAME=$(filter-out $@,$(MAKECMDGOALS))
 test-controller:
 	go test ./tests/controllers_test -v -run $(TEST_NAME)
 
-.PHONY: dao migrate-up migrate-down force goto drop create auto-create swagger test-repo lint-install
+.PHONY: dao migrate create swagger test-repo lint-install
 
