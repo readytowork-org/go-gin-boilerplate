@@ -54,3 +54,5 @@ test-controller:
 
 .PHONY: dao migrate create swagger test-repo lint-install
 
+context-upload:
+	bash automate/scripts/ci-upload.sh
