@@ -74,7 +74,24 @@ debugger to remote application.
 
 ## Implements Google Cloud Proxy by default
 
+<<<<<<< Updated upstream
 This reduces hassle for developer to update IP in Cloud SQL during IP Change.
+=======
+| Command               | Desc                                               |
+| --------------------- | -------------------------------------------------- |
+| `make install`        | installs goalngci-lint and change the hooks config |
+| `make start`          | setup pre-commit hook and runs the project         |
+| `make run`            | runs the project                                   |
+| `make migrate-up`     | runs migration up command                          |
+| `make migrate-down`   | runs migration down command                        |
+| `make force`          | Set particular version but don't run migration     |
+| `make goto`           | Migrate to particular version                      |
+| `make drop`           | Drop everything inside database                    |
+| `make create`         | Create new migration file(up & down)               |
+| `make crud`           | Create crud template                               |
+| `swag-generate`       | Run this command to generate swag docs             |
+| `make context-upload` | Upload Context to Circle CI Directly               |
+>>>>>>> Stashed changes
 
 Implemented through docker image as follows
 
