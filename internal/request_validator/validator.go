@@ -3,6 +3,7 @@ package request_validator
 import (
 	"fmt"
 	"regexp"
+	"time"
 
 	"boilerplate-api/internal/api_errors"
 	"boilerplate-api/internal/constants"
@@ -20,14 +21,14 @@ type Validator struct {
 // NewValidator Register Custom Validators
 func NewValidator() Validator {
 	v := validator.New()
-	_ = v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
+	v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
 		if fl.Field().String() != "" {
 			match, _ := regexp.MatchString("^[- +()]*[0-9][- +()0-9]*$", fl.Field().String())
 			return match
 		}
 		return true
 	})
-	_ = v.RegisterValidation("gender", func(fl validator.FieldLevel) bool {
+	v.RegisterValidation("gender", func(fl validator.FieldLevel) bool {
 		if fl.Field().String() != "" {
 			var valType constants.Gender
 			if err := valType.IsValidVal(fl.Field().String()); err != nil {
@@ -36,12 +37,16 @@ func NewValidator() Validator {
 		}
 		return true
 	})
-	_ = v.RegisterValidation("email", func(fl validator.FieldLevel) bool {
+	v.RegisterValidation("email", func(fl validator.FieldLevel) bool {
 		if fl.Field().String() != "" {
 			match, _ := regexp.MatchString(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`, fl.Field().String())
 			return match
 		}
 		return true
+	})
+	v.RegisterValidation("date", func(fl validator.FieldLevel) bool {
+		_, parseErr := time.Parse("2006-01-02", fl.Field().String())
+		return parseErr == nil
 	})
 	return Validator{
 		Validate: v,
@@ -58,6 +63,8 @@ func (cv Validator) generateValidationMessage(field string, rule string) (messag
 		return fmt.Sprintf("Field '%s' is not valid.", field)
 	case "email":
 		return fmt.Sprintf("Field '%s' is not valid.", field)
+	case "date":
+		return fmt.Sprintf("Invalid date format for '%s' use YYYY-MM-DD", field)
 	default:
 		return fmt.Sprintf("Field '%s' is not valid.", field)
 	}
