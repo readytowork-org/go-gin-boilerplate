@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"time"
 
 	"boilerplate-api/internal/utils"
+
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -16,6 +18,8 @@ import (
 
 type EmailParams struct {
 	To              string
+	From            string
+	SenderEmail     string
 	SubjectData     string
 	SubjectTemplate string
 	BodyData        interface{}
@@ -71,6 +75,8 @@ func NewGmailService(gmailConfig GmailConfig) GmailService {
 
 func (g GmailService) SendEmail(params EmailParams) (bool, error) {
 	to := params.To
+	from := params.From
+	sender := params.SenderEmail
 	emailBody, err := utils.ParseTemplate(params.BodyTemplate, params.BodyData)
 	if err != nil {
 		return false, errors.New("unable to parse email body template")
@@ -82,6 +88,22 @@ func (g GmailService) SendEmail(params EmailParams) (bool, error) {
 	msgString = msgString + subject
 	msgString = msgString + "\n" + emailBody
 	var msg []byte
+
+	var _from string
+
+	if from != "" && sender != "" {
+		// sender should be email from which mail is being sent
+		if params.Lang != "en" {
+			encodedName := base64.StdEncoding.EncodeToString([]byte(from))
+			_from = fmt.Sprintf("From: =?UTF-8?B?%s?= <%s>\r\n", encodedName, sender)
+		} else {
+			_from = fmt.Sprintf("From: \"%s\" <%s>\r\n", from, sender)
+		}
+	}
+
+	if _from != "" {
+		msgString = _from + msgString
+	}
 
 	if params.Lang != "en" {
 		msgStringJP, _ := utils.ToISO2022JP(msgString)
