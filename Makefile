@@ -1,6 +1,7 @@
 include .env
 
 DB_DSN="${DB_USERNAME}:${DB_PASSWORD}@tcp(${DB_HOST}:${DB_PORT})/${DB_NAME}"
+BB_DSN_GEN = "${DB_USERNAME}:${DB_PASSWORD}@tcp(localhost:33066)/${DB_NAME}"
 
 MIGRATE_LOCAL=migrate -path=database/migration -database ${DB_TYPE}"://"${DB_DSN} -verbose
 
@@ -22,7 +23,7 @@ migrate:
 
 dao:
 		@command -v gentool >/dev/null 2>&1 || (echo "Installing gentool..." && go install gorm.io/gen/tools/gentool@latest)
-		gentool -dsn ${DB_DSN} -fieldNullable -fieldWithIndexTag -fieldWithTypeTag -fieldSignable -onlyModel -outPath "./database/dao" -modelPkgName "dao"
+		gentool -dsn ${BB_DSN_GEN} -fieldNullable -fieldWithIndexTag -fieldWithTypeTag -fieldSignable -onlyModel -outPath "./database/dao" -modelPkgName "dao"
 
 swagger:
 		@command -v swag >/dev/null 2>&1 || (echo "Installing swag..." && go install github.com/swaggo/swag/cmd/swag@latest)
