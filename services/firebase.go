@@ -24,7 +24,7 @@ type IFirebaseMiddlewareService interface {
 	VerifyToken(token string) (*FirebaseToken, *AuthErrorResponse)
 }
 
-type IFirebaseAuthService interface {
-	GetUserByEmail(context context.Context, email string) (interface{}, *error)
-	CreateUser(displayName, email, password, role string) (interface{}, *AuthErrorResponse)
+type IFirebaseAdminSeed interface {
+	GetUserByEmail(context context.Context, email string) (interface{}, error)
+	CreateUser(displayName, email, password, role string) (string, *AuthErrorResponse)
 }

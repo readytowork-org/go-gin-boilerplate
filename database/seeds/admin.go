@@ -12,7 +12,7 @@ import (
 type AdminSeed struct {
 	Seed
 	logger          config.Logger
-	firebaseService services.IFirebaseAuthService
+	firebaseService services.IFirebaseAdminSeed
 	adminEmail      string
 	adminPass       string
 	adminName       string
@@ -21,7 +21,7 @@ type AdminSeed struct {
 // NewAdminSeed creates admin seed
 func NewAdminSeed(
 	logger config.Logger,
-	authService services.IFirebaseAuthService,
+	authService services.IFirebaseAdminSeed,
 	adminEmail string,
 	adminPass string,
 	adminName string,
