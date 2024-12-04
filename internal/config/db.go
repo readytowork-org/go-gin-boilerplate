@@ -38,6 +38,7 @@ func NewDatabase(logger Logger, dsnConfig DSNConfig) *Database {
 			Passwd:               dsnConfig.Password,
 			Net:                  dsnConfig.Network,
 			Addr:                 dsnConfig.Address,
+			DBName:               dsnConfig.DBName,
 			ParseTime:            dsnConfig.ParseTime,
 			Loc:                  dsnConfig.TimeLocation,
 			AllowNativePasswords: true,
@@ -45,11 +46,10 @@ func NewDatabase(logger Logger, dsnConfig DSNConfig) *Database {
 		}
 		_dialector := mysql.New(
 			mysql.Config{
-				DSNConfig: &mysqlDSNConfig,
+				DSN: mysqlDSNConfig.FormatDSN(),
 			},
 		)
 		dialector = &_dialector
-		mysqlDSNConfig.DBName = dsnConfig.DBName
 		database.dsn = mysqlDSNConfig.FormatDSN()
 		break
 	}
