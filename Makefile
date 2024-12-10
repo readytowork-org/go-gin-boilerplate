@@ -2,9 +2,14 @@ include .env
 
 DB_DSN="${DB_USERNAME}:${DB_PASSWORD}@tcp(${DB_HOST}:${DB_PORT})/${DB_NAME}"
 
+# host and port used are based on docker config
+DB_DSN_DOCKER="${DB_USERNAME}:${DB_PASSWORD}@tcp(localhost:33066)/${DB_NAME}"
+
 MIGRATE_LOCAL=migrate -path=database/migration -database ${DB_TYPE}"://"${DB_DSN} -verbose
 
 MIGRATE=docker-compose exec web ${MIGRATE_LOCAL}
+
+GEN_TOOL=gentool -fieldNullable -fieldWithIndexTag -fieldWithTypeTag -fieldSignable -onlyModel -outPath './database/dao' -modelPkgName 'dao'
 
 migrate:
          ifeq (migrate,$(firstword $(MAKECMDGOALS)))
@@ -22,7 +27,7 @@ migrate:
 
 dao:
 		@command -v gentool >/dev/null 2>&1 || (echo "Installing gentool..." && go install gorm.io/gen/tools/gentool@latest)
-		gentool -dsn ${DB_DSN} -fieldNullable -fieldWithIndexTag -fieldWithTypeTag -fieldSignable -onlyModel -outPath "./database/dao" -modelPkgName "dao"
+		@if [ "$(env)" = "local" ]; then $(GEN_TOOL) -dsn $(DB_DSN); else $(GEN_TOOL) -dsn $(DB_DSN_DOCKER); fi
 
 swagger:
 		@command -v swag >/dev/null 2>&1 || (echo "Installing swag..." && go install github.com/swaggo/swag/cmd/swag@latest)
