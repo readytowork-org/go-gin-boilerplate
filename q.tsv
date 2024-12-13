@@ -1,0 +1,86 @@
+Questions	Answers
+Entry-Level (Focus on Fundamentals)
+Golang
+Explain the purpose of the main function in Go.
+What are the different data types available in Go?
+How do you declare and initialize variables in Go?
+What is the difference between =, := and const in Go?
+How do you write and use functions in Go?
+What are the advantages of using Golang for backend development?
+Explain the difference between goroutines and OS threads.
+How do you format strings in Go?
+
+REST and APIs
+What is a RESTful API?
+Describe the principles of RESTful API design.
+What are the common HTTP methods used in RESTful APIs?
+Explain the difference between GET and POST requests.
+What is JSON and how is it used in RESTful APIs?
+Describe the purpose of HTTP headers in API requests and responses.
+What are some common tools used for testing RESTful APIs?
+
+Databases
+What is a database schema?
+Explain the difference between a primary key and a foreign key.
+Write a simple SQL query to select data from a table.
+Describe the purpose of indexing in databases.
+What is a database transaction?
+What are the different types of databases (SQL, NoSQL, etc.) and their use cases?
+Explain the benefits of using a database connection pool.
+
+Mid-Level (Focus on Application & Best Practices)
+Golang
+Describe how you would implement concurrency in a Go application.
+Explain the concept of race conditions and how to avoid them in Go.
+How do you write unit tests in Go?
+What are some common Golang testing frameworks?
+How do you handle configuration files in your Go applications?
+How does garbage collection work in Go?
+What is the purpose of channels in Go and how are they used?
+What are the built-in data structures in Go?
+
+REST and APIs
+How do you handle authentication and authorization in your Go APIs?
+Describe different approaches for API rate limiting and their tradeoffs.
+Explain how you would design an API for a specific scenario (e.g., a blog, an e-commerce store).
+What are some best practices for documenting Go APIs?
+How do you handle errors gracefully in your API responses?
+How do you handle different HTTP status codes in your Go API responses?
+Explain the purpose of API versioning and describe different approaches.
+
+Databases
+Explain the concept of database normalization and its benefits.
+How would you optimize a slow-performing database query?
+Describe the differences between different database indexing techniques (B-tree, hash, etc.).
+Explain the CAP theorem in the context of distributed databases.
+What are some strategies for handling database migrations in your Go applications?
+How do you prevent SQL injection vulnerabilities in your Go code?
+Describe the difference between relational and non-relational databases.
+
+Senior-Level (Focus on Architecture, Optimization & Leadership)
+Golang
+Design a Golang application for a specific use case (e.g., a message queue, a caching service). Discuss your design choices and rationale.
+How do you profile and optimize the performance of a Go application?
+Explain the benefits and drawbacks of different concurrency patterns in Go (e.g., worker pools, pipelines).
+Describe your experience with building and maintaining large-scale, distributed systems in Go.
+What are some common challenges of working with Go at scale and how would you address them?
+Describe the differences between pass by value and pass by reference in Go.
+How do you handle errors in Go? Explain error types and best practices.
+What are the common use cases for pointers in Go?
+Explain the concept of interfaces in Go and provide an example of their use.
+
+REST and APIs
+Design a scalable and resilient API gateway for a microservices architecture.
+How do you monitor and analyze the performance of your APIs in production?
+What are some strategies for handling API versioning in a large and evolving system?
+Explain the concept of HATEOAS and its relevance to RESTful API design.
+Describe your experience with different API documentation tools and approaches.
+What are some best practices for designing secure APIs?
+
+Databases
+Design a database schema for a complex application with various data relationships and requirements.
+Explain the differences between various database sharding and partitioning strategies.
+Describe your experience with different database replication techniques and their tradeoffs.
+How would you design a system for handling high volumes of database reads and writes?
+What are some common database performance bottlenecks and how would you diagnose and resolve them?
+What are some popular Go libraries for interacting with databases?

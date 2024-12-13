@@ -1,6 +1,6 @@
 package user
 
-import "boilerplate-api/internal/utils"
+import "boilerplate-api/lib/utils"
 
 type Pagination struct {
 	utils.Pagination

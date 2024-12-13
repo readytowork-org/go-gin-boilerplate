@@ -20,8 +20,8 @@ type User struct {
 	Gender    string         `gorm:"column:gender;type:varchar(15);not null" json:"gender"`
 	Email     string         `gorm:"column:email;type:varchar(100);not null;uniqueIndex:UQ_user_email,priority:1" json:"email"`
 	Password  string         `gorm:"column:password;type:varchar(100);not null" json:"password"`
-	CreatedAt time.Time      `gorm:"column:created_at;type:datetime;not null" json:"created_at"`
-	UpdatedAt *time.Time     `gorm:"column:updated_at;type:datetime" json:"updated_at"`
+	CreatedAt time.Time      `gorm:"column:created_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time      `gorm:"column:updated_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;type:datetime" json:"deleted_at"`
 }
 

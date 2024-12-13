@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/router"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/router"
 	"boilerplate-api/services"
 	"boilerplate-api/tests"
 	"go.uber.org/fx"
@@ -21,10 +21,12 @@ type ControllerTests []ControllerTest
 func (controllerTests ControllerTests) InternalTestSetup() (tests []testing.InternalTest) {
 	for _, test := range controllerTests {
 		name := reflect.TypeOf(test).Name()
-		tests = append(tests, testing.InternalTest{
-			Name: name,
-			F:    test.SetupControllerTest,
-		})
+		tests = append(
+			tests, testing.InternalTest{
+				Name: name,
+				F:    test.SetupControllerTest,
+			},
+		)
 	}
 	return tests
 }
@@ -46,13 +48,15 @@ var ControllerIntegrationTestModules = fx.Options(
 func bootstrapRepoTest(
 	repoTests ControllerTests,
 ) {
-	os.Exit(testing.MainStart(
-		tests.MatchStringOnly{},
-		repoTests.InternalTestSetup(),
-		nil,
-		nil,
-		nil,
-	).Run())
+	os.Exit(
+		testing.MainStart(
+			tests.MatchStringOnly{},
+			repoTests.InternalTestSetup(),
+			nil,
+			nil,
+			nil,
+		).Run(),
+	)
 }
 
 func TestMain(m *testing.M) {

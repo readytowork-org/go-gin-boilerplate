@@ -3,10 +3,10 @@ package middlewares
 import (
 	"net/http"
 
-	"boilerplate-api/internal/auth"
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/constants"
-	"boilerplate-api/internal/json_response"
+	"boilerplate-api/lib/auth"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/constants"
+	"boilerplate-api/lib/json_response"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"

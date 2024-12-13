@@ -2,7 +2,7 @@ package cli
 
 import (
 	"boilerplate-api/database/seeds/faker"
-	"boilerplate-api/internal/config"
+	"boilerplate-api/lib/config"
 )
 
 // CreateSeedData command

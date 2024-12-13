@@ -3,12 +3,12 @@ package user
 import (
 	"net/http"
 
-	"boilerplate-api/internal/api_errors"
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/constants"
-	"boilerplate-api/internal/json_response"
-	"boilerplate-api/internal/request_validator"
-	"boilerplate-api/internal/utils"
+	"boilerplate-api/lib/api_errors"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/constants"
+	"boilerplate-api/lib/json_response"
+	"boilerplate-api/lib/request_validator"
+	"boilerplate-api/lib/utils"
 	"github.com/gin-gonic/gin"
 
 	"gorm.io/gorm"

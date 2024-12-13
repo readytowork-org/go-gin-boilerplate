@@ -1,7 +1,7 @@
 package seeds
 
 import (
-	"boilerplate-api/internal/config"
+	"boilerplate-api/lib/config"
 	"go.uber.org/fx"
 )
 

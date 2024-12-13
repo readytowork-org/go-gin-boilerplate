@@ -1,8 +1,8 @@
 package swagger
 
 import (
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/router"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/router"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )

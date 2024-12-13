@@ -6,10 +6,10 @@ import (
 	"boilerplate-api/api"
 	"boilerplate-api/cli"
 	"boilerplate-api/database/seeds"
-	"boilerplate-api/internal"
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/router"
-	"boilerplate-api/internal/utils"
+	"boilerplate-api/lib"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/router"
+	"boilerplate-api/lib/utils"
 	"boilerplate-api/services"
 	"boilerplate-api/swagger"
 	"go.uber.org/fx"
@@ -17,7 +17,7 @@ import (
 
 // Module exported for initializing application
 var Module = fx.Options(
-	internal.Module,
+	lib.Module,
 	seeds.Module,
 	cli.Module,
 	services.Module,

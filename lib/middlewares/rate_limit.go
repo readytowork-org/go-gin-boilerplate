@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	"boilerplate-api/internal/json_response"
+	"boilerplate-api/lib/json_response"
 
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/constants"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/constants"
 	"github.com/gin-gonic/gin"
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/memory"

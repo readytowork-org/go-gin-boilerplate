@@ -1,7 +1,7 @@
 package utility
 
 import (
-	"boilerplate-api/internal/router"
+	"boilerplate-api/lib/router"
 )
 
 // SetupRoutes Setup sets up route for util entities

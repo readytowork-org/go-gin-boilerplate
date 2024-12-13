@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/constants"
-	"boilerplate-api/internal/middlewares"
-	"boilerplate-api/internal/router"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/constants"
+	"boilerplate-api/lib/middlewares"
+	"boilerplate-api/lib/router"
 )
 
 // JwtAuthRoutes struct
@@ -38,7 +38,11 @@ func SetupRoutes(
 	rateLimitMiddleware middlewares.RateLimitMiddleware,
 ) {
 	logger.Info(" Setting up jwt routes")
-	jwt := router.V1.Group("/login").Use(rateLimitMiddleware.HandleRateLimit(constants.LoginRateLimit, constants.LoginPeriod))
+	jwt := router.V1.Group("/login").Use(
+		rateLimitMiddleware.HandleRateLimit(
+			constants.LoginRateLimit, constants.LoginPeriod,
+		),
+	)
 	{
 		jwt.POST("", jwtController.LoginUserWithJWT)
 		jwt.POST("/refresh", jwtController.RefreshJwtToken)

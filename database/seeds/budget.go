@@ -3,8 +3,8 @@ package seeds
 import (
 	"context"
 
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/utils"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/utils"
 )
 
 type IGcpBillingService interface {

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"boilerplate-api/internal/utils"
+	"boilerplate-api/lib/utils"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

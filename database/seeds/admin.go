@@ -3,8 +3,8 @@ package seeds
 import (
 	"context"
 
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/constants"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/constants"
 	"boilerplate-api/services"
 )
 

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"boilerplate-api/internal/config"
+	"boilerplate-api/lib/config"
 	"boilerplate-api/tests"
 	"go.uber.org/fx"
 )
@@ -18,10 +18,12 @@ type RepoTest interface {
 func (repoTest RepoTests) InternalTestSetup() (tests []testing.InternalTest) {
 	for _, test := range repoTest {
 		name := reflect.TypeOf(test).Name()
-		tests = append(tests, testing.InternalTest{
-			Name: name,
-			F:    test.SetupRepoTest,
-		})
+		tests = append(
+			tests, testing.InternalTest{
+				Name: name,
+				F:    test.SetupRepoTest,
+			},
+		)
 	}
 	return tests
 }
@@ -44,13 +46,15 @@ func bootstrapRepoTest(
 ) {
 	migrations.MigrateUp()
 
-	os.Exit(testing.MainStart(
-		tests.MatchStringOnly{},
-		repoTests.InternalTestSetup(),
-		nil,
-		nil,
-		nil,
-	).Run())
+	os.Exit(
+		testing.MainStart(
+			tests.MatchStringOnly{},
+			repoTests.InternalTestSetup(),
+			nil,
+			nil,
+			nil,
+		).Run(),
+	)
 }
 
 func TestMain(m *testing.M) {

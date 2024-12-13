@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/json_response"
-	"boilerplate-api/internal/utils"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/json_response"
+	"boilerplate-api/lib/utils"
 	"boilerplate-api/services/aws"
 	"github.com/gin-gonic/gin"
 )

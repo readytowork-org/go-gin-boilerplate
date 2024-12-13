@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"boilerplate-api/internal/config"
-	"boilerplate-api/internal/constants"
-	"boilerplate-api/internal/json_response"
-	"boilerplate-api/internal/request_validator"
+	"boilerplate-api/lib/config"
+	"boilerplate-api/lib/constants"
+	"boilerplate-api/lib/json_response"
+	"boilerplate-api/lib/request_validator"
 	"github.com/gin-gonic/gin"
 )
 

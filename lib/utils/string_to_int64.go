@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"boilerplate-api/internal/api_errors"
 	"strconv"
+
+	"boilerplate-api/lib/api_errors"
 )
 
 func StringToInt64(stringData string) (int64, *api_errors.ErrorResponse) {

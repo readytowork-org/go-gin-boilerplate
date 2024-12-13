@@ -2,7 +2,7 @@ package faker
 
 import (
 	_ "boilerplate-api/__mocks/mock_data"
-	"boilerplate-api/internal/config"
+	"boilerplate-api/lib/config"
 	"gorm.io/gorm"
 )
 
