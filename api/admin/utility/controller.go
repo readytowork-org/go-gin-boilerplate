@@ -1,9 +1,6 @@
 package utility
 
 import (
-	"context"
-	"image"
-	"mime/multipart"
 	"net/http"
 	"path/filepath"
 
@@ -14,44 +11,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type GcpStorageBucketService interface {
-	UploadFile(ctx context.Context, file multipart.File, fileName string) (string, error)
-	UploadThumbnailFile(ctx context.Context, image image.Image, fileName string, fileExtension string) (string, error)
-}
-
 type Controller struct {
 	logger   config.Logger
-	env      config.Env
-	bucket   GcpStorageBucketService
 	s3Bucket aws.S3BucketService
+	service  Service
 }
 
 func NewController(
 	logger config.Logger,
-	env config.Env,
-	bucket GcpStorageBucketService,
 	s3Bucket aws.S3BucketService,
+	service Service,
 ) Controller {
 	return Controller{
 		logger:   logger,
-		env:      env,
-		bucket:   bucket,
 		s3Bucket: s3Bucket,
+		service:  service,
 	}
 }
 
-// Response for the util scope
-type Response struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    string      `json:"data"`
-	Path    string      `json:"path"`
-	Value   interface{} `json:"attributes"`
-}
-
-const storageURL string = "https://storage.googleapis.com/"
-
-// FileUploadHandler handles file upload
+//	@Tags			UtilityApi
+//	@Summary		handles file upload
+//	@Description	handles file upload
+//	@Security		Bearer
+//	@Produce		application/json
+//	@Param			file	formData	file		true	"Upload File"
+//	@Success		200		{object}	Response	"File Uploaded Successfully"
+//	@Failure		400		{object}	json_response.Error[string]
+//	@Router			/api/v1/utils/file-upload [post]
+//	@Id				FileUpload
 func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 	file, uploadFile, err := ctx.Request.FormFile("file")
 	if err != nil {
@@ -65,98 +52,18 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 		return
 	}
 
-	fileExtension := filepath.Ext(uploadFile.Filename)
-	fileName := utils.GenerateRandomFileName() + fileExtension
-	originalFileName := "images/original/" + fileName
-	thumbnailFileName := "images/thumbnail/" + fileName
-
-	// File type
-	file1, _, _ := ctx.Request.FormFile("file")
-	fileHeader := make([]byte, 512)
-	if _, err := file1.Read(fileHeader); err != nil {
-		uc.logger.Error("Error File Read upload File::", err.Error())
-		ctx.JSON(
-			http.StatusBadRequest, json_response.Error[string]{
-				Error:   err.Error(),
-				Message: "Failed to read File",
-			},
-		)
-		return
-	}
-	fileType := http.DetectContentType(fileHeader)
-	if fileType == "image/png" || fileType == "image/jpg" || fileType == "image/jpeg" || fileType == "image/gif" {
-		uploadedOriginalURL, err := uc.bucket.UploadFile(ctx.Request.Context(), file, originalFileName)
-		if err != nil {
-			uc.logger.Error("Error Failed to upload File::", err.Error())
-			ctx.JSON(
-				http.StatusBadRequest, json_response.Error[string]{
-					Error:   err.Error(),
-					Message: "Failed to upload File",
-				},
-			)
-			return
-		}
-
-		//upload thumbnail
-		thumbnail, err := utils.CreateThumbnail(file, fileType, 200, 0)
-		if err != nil {
-			uc.logger.Error("Error Failed create thumbnail", err.Error())
-			ctx.JSON(
-				http.StatusBadRequest, json_response.Error[string]{
-					Error:   err.Error(),
-					Message: "Failed to create thumbnail",
-				},
-			)
-			return
-		}
-		uploadThumbnailUrl, err := uc.bucket.UploadThumbnailFile(
-			ctx.Request.Context(), thumbnail, thumbnailFileName, fileExtension,
-		)
-		if err != nil {
-			uc.logger.Error("Error Failed to upload File::", err.Error())
-			ctx.JSON(
-				http.StatusBadRequest, json_response.Error[string]{
-					Error:   err.Error(),
-					Message: "Failed to upload thumbnail File",
-				},
-			)
-			return
-		}
-
-		response := &Response{
-			Success: true,
-			Message: "Uploaded Successfully",
-			Data:    storageURL + uc.env.StorageBucketName + "/" + uploadedOriginalURL,
-			Path:    uploadedOriginalURL,
-			Value: map[string]string{
-				"original_image_url":   storageURL + uc.env.StorageBucketName + "/" + uploadedOriginalURL,
-				"original_image_path":  uploadedOriginalURL,
-				"thumbnail_image_url":  storageURL + uc.env.StorageBucketName + "/" + uploadThumbnailUrl,
-				"thumbnail_image_path": uploadThumbnailUrl,
-			},
-		}
-		ctx.JSON(http.StatusOK, response)
-		return
-	}
-
-	originalFileName = "files/" + fileName
-	uploadedFileURL, err := uc.bucket.UploadFile(ctx.Request.Context(), file, originalFileName)
+	message, response, err := uc.service.UploadImage(file, uploadFile)
 	if err != nil {
-		uc.logger.Error("Error Failed to upload File::", err.Error())
+		uc.logger.Error("Error Upload File from request :: ", err.Error())
 		ctx.JSON(
-			http.StatusBadRequest, json_response.Error[string]{
+			message.StatusCode, json_response.Error[string]{
 				Error:   err.Error(),
-				Message: "Failed to upload File",
+				Message: message.Message,
 			},
 		)
 		return
 	}
-	response := &Response{
-		Success: true,
-		Message: "Uploaded Successfully",
-		Data:    storageURL + uc.env.StorageBucketName + "/" + uploadedFileURL,
-		Path:    uploadedFileURL,
-	}
+
 	ctx.JSON(http.StatusOK, response)
 }
 

@@ -1,35 +1,23 @@
 package utils
 
 import (
-	"image"
-	"image/jpeg"
-	"image/png"
+	"bytes"
 	"mime/multipart"
 
 	"github.com/nfnt/resize"
 )
 
 // CreateThumbnail image
-func CreateThumbnail(file multipart.File, fileType string, width, height uint) (image.Image, error) {
-	var img image.Image
-	var err error
-
-	// Seek back to beginning of file for CreateThumbnail
-	if _, err := file.Seek(0, 0); err != nil {
-		return nil, err
-	}
-	if fileType == "image/jpeg" || fileType == "image/jpg" {
-		img, err = jpeg.Decode(file)
-	} else if fileType == "image/png" {
-		img, err = png.Decode(file)
-	}
+func CreateThumbnail(file multipart.File, fileType string, width, height uint) (*bytes.Buffer, error) {
+	thumbnailImg, err := DecodeImage(file, fileType)
 	if err != nil {
 		return nil, err
 	}
-	thumbnail := resize.Resize(width, height, img, resize.Lanczos3)
-	return thumbnail, nil
+	thumbnail := resize.Resize(width, height, thumbnailImg, resize.Lanczos3)
+	thumbnailFile, err := EncodeImage(thumbnail, fileType)
+	if err != nil {
+		return nil, err
+	}
+
+	return thumbnailFile, nil
 }
-
-
-
-
