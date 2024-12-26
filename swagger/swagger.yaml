@@ -19,6 +19,13 @@ definitions:
     required:
     - message
     type: object
+  Data-string:
+    properties:
+      data:
+        type: string
+    required:
+      - data
+    type: object
   Data-user_CUser:
     properties:
       data:
@@ -133,6 +140,24 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  utility.Response:
+    properties:
+      attributes: { }
+      data:
+        type: string
+      message:
+        type: string
+      path:
+        type: string
+      success:
+        type: boolean
+    required:
+      - attributes
+      - data
+      - message
+      - path
+      - success
     type: object
 host: localhost:8000
 info:
@@ -251,6 +276,57 @@ paths:
       summary: Create CreateUser
       tags:
       - UserManagementApi
+  /api/v1/utils/file-upload:
+    post:
+      description: handles file upload
+      operationId: FileUpload
+      parameters:
+        - description: Upload File
+          in: formData
+          name: file
+          required: true
+          type: file
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: File Uploaded Successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ApiError-string'
+      security:
+        - Bearer: [ ]
+      summary: handles file upload
+      tags:
+        - UtilityApi
+  /api/v1/utils/images/signed_url:
+    get:
+      description: generate signed url
+      operationId: GetSignedUrl
+      parameters:
+        - description: Image Url
+          in: query
+          name: image_url
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Data-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ApiError-string'
+      security:
+        - Bearer: [ ]
+      summary: GetSignedUrl
+      tags:
+        - UtilityApi
 securityDefinitions:
   Bearer:
     description: Description for what is this security definition being used

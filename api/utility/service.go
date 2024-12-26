@@ -140,3 +140,19 @@ func (s Service) UploadImage(file multipart.File, uploadFile *multipart.FileHead
 		}, response, nil
 	}
 }
+
+// GetSignedUrl generates a signed URL for accessing the specified image in the storage bucket.
+// It logs an error and returns an empty string if the URL conversion fails.
+//
+// Parameters:
+//   - imageUrl: The path of the image for which the signed URL is to be generated.
+//
+// Returns:
+//   - A signed URL string that allows access to the specified image, or an empty string if an error occurs.
+func (s Service) GetSignedUrl(imageUrl string) (string, error) {
+	signedURL, err := utils.GetObjectSignedURL(s.env.StorageBucketName, imageUrl)
+	if err != nil {
+		return "", err
+	}
+	return signedURL, nil
+}

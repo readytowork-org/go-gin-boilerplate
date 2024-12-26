@@ -11,7 +11,8 @@ func SetupRoutes(
 ) {
 	utils := router.V1.Group("/utils")
 	{
-		utils.POST("/file-upload", utilityController.FileUploadHandler)
+		utils.POST("/files/upload", utilityController.FileUploadHandler)
+		utils.GET("/images/signed_url", utilityController.GetSignedUrl)
 		utils.POST("/s3-file-upload", utilityController.FileUploadS3Handler)
 	}
 }

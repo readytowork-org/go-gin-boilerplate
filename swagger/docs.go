@@ -159,6 +159,87 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/utils/file-upload": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "handles file upload",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UtilityApi"
+                ],
+                "summary": "handles file upload",
+                "operationId": "FileUpload",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Upload File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File Uploaded Successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ApiError-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/utils/images/signed_url": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "generate signed url",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UtilityApi"
+                ],
+                "summary": "GetSignedUrl",
+                "operationId": "GetSignedUrl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image Url",
+                        "name": "image_url",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Data-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ApiError-string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/{id}": {
             "get": {
                 "security": [
@@ -220,6 +301,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Data-string": {
+            "type": "object",
+            "required": [
+                "data"
+            ],
+            "properties": {
+                "data": {
                     "type": "string"
                 }
             }
@@ -397,6 +489,31 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "utility.Response": {
+            "type": "object",
+            "required": [
+                "attributes",
+                "data",
+                "message",
+                "path",
+                "success"
+            ],
+            "properties": {
+                "attributes": {},
+                "data": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         }

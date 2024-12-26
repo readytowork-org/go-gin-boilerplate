@@ -67,6 +67,40 @@ func (uc Controller) FileUploadHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+//	@Tags			UtilityApi
+//	@Summary		GetSignedUrl
+//	@Description	generate signed url
+//	@Security		Bearer
+//	@Produce		application/json
+//	@Param			image_url	query		string	false	"Image Url"
+//	@Success		200			{object}	json_response.Data[string]
+//	@Failure		400			{object}	json_response.Error[string]
+//	@Router			/api/v1/utils/images/signed_url [get]
+//	@Id				GetSignedUrl
+func (uc Controller) GetSignedUrl(ctx *gin.Context) {
+	imageUrl := ctx.Query("image_url")
+	if imageUrl == "" {
+		ctx.JSON(
+			http.StatusBadRequest, json_response.Error[string]{
+				Message: "Image Url is invalid",
+			},
+		)
+	}
+
+	signedUrl, err := uc.service.GetSignedUrl(imageUrl)
+	if err != nil {
+		uc.logger.Error("Error Failed to convert signed url:", err.Error())
+		ctx.JSON(
+			http.StatusOK, json_response.Error[string]{
+				Message: "Error Failed to convert signed url",
+			},
+		)
+		return
+	}
+
+	ctx.Redirect(http.StatusFound, signedUrl)
+}
+
 // Input model
 type Input struct {
 	Path *string `form:"path" json:"path" binding:"required"`
