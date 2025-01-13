@@ -2,6 +2,7 @@ package user
 
 import (
 	"boilerplate-api/lib/config"
+
 	"gorm.io/gorm"
 )
 
@@ -25,7 +26,7 @@ func (c Repository) WithTrx(trxHandle *gorm.DB) Repository {
 		c.logger.Error("Transaction Database not found in gin context. ")
 		return c
 	}
-	c.db.DB = trxHandle
+	c.db = &config.Database{DB: trxHandle}
 	return c
 }
 

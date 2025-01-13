@@ -39,8 +39,9 @@ func (m DBTransactionMiddleware) DBTransactionHandle() gin.HandlerFunc {
 			if r := recover(); r != nil {
 				if err := txHandle.Error; err != nil {
 					m.logger.Error("trx commit error: ", err)
+					_ = txHandle.Rollback()
+					panic(r)
 				}
-				txHandle.Rollback()
 			}
 		}()
 

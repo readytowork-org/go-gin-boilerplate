@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"boilerplate-api/database/dao"
+
 	"github.com/brianvoe/gofakeit/v7"
 )
 
@@ -21,7 +22,7 @@ func (u *FakeUser) Fake(f *gofakeit.Faker) (any, error) {
 	u.Gender = f.Gender()
 	u.Password = f.Word()
 	u.CreatedAt = createdDate
-	u.UpdatedAt = &u.CreatedAt
+	u.UpdatedAt = u.CreatedAt
 
 	createdDate = createdDate.Add(1 * time.Minute)
 	return *u, nil
